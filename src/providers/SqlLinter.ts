@@ -211,7 +211,11 @@ export class SqlLinter {
         const pattern = /\bcreate\s+table\b(?!.*\bprimary\s+key\b)/gi
         let match
         while ((match = pattern.exec(text)) !== null) {
-            this.addDiagnostic(text, document, diagnostics, match.index, 12, "CREATE TABLE 语句建议定义主键", "missing_primary_key")
+            // 检查是否有常见的主键字段名，如果有就不警告
+            const hasCommonIdFields = /\b(id|uuid|guid|_id|Id|ID|UUID|GUID)\b/i.test(match.input.slice(match.index))
+            if (!hasCommonIdFields) {
+                this.addDiagnostic(text, document, diagnostics, match.index, 12, "CREATE TABLE 语句建议定义主键", "missing_primary_key")
+            }
         }
     }
 
