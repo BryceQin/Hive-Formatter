@@ -501,6 +501,36 @@
                     "type": "boolean",
                     "default": true,
                     "markdownDescription": "是否启用快速修复功能"
+                },
+                "Hive-Formatter.enableCompletion": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用智能补全功能"
+                },
+                "Hive-Formatter.completion.keywords": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含关键字"
+                },
+                "Hive-Formatter.completion.functions": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含函数"
+                },
+                "Hive-Formatter.completion.snippets": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含代码片段"
+                },
+                "Hive-Formatter.completion.cteNames": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否提示 CTE 名称"
+                },
+                "Hive-Formatter.completion.identifiers": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否提示表名和列名"
                 }
             }
         }
