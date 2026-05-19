@@ -221,7 +221,7 @@ export const functions: string[] = [
 ];
 
 export const functionSignatures: FunctionSignature[] = [
-    // --- MATH (38) ---
+    // --- MATH (40) ---
     { name: 'ABS', params: ['double a'], returnType: 'double', description: '返回数值的绝对值', category: 'math' },
     { name: 'ACOS', params: ['double a'], returnType: 'double', description: '返回反余弦值', category: 'math' },
     { name: 'ASIN', params: ['double a'], returnType: 'double', description: '返回反正弦值', category: 'math' },
@@ -313,7 +313,7 @@ export const functionSignatures: FunctionSignature[] = [
     { name: 'NULLIF', params: ['T a', 'T b'], returnType: 'T', description: '若 a=b 则返回 NULL，否则返回 a', category: 'conditional' },
     { name: 'NVL', params: ['T a', 'T default'], returnType: 'T', description: '若 a 为 NULL 则返回 default 值', category: 'conditional' },
 
-    // --- STRING (42) ---
+    // --- STRING (46) ---
     { name: 'ASCII', params: ['string str'], returnType: 'int', description: '返回字符串第一个字符的 ASCII 码', category: 'string' },
     { name: 'BASE64', params: ['binary bin'], returnType: 'string', description: '将二进制数据编码为 Base64 字符串', category: 'string' },
     { name: 'CHARACTER_LENGTH', params: ['string str'], returnType: 'int', description: '返回字符串的字符长度', category: 'string' },
@@ -327,7 +327,6 @@ export const functionSignatures: FunctionSignature[] = [
     { name: 'FIELD', params: ['T val', 'T val1', 'T val2', '...'], returnType: 'int', description: '返回 val 在参数列表中的位置（从 1 开始）', category: 'string' },
     { name: 'FIND_IN_SET', params: ['string str', 'string strlist'], returnType: 'int', description: '返回 str 在逗号分隔列表中的位置', category: 'string' },
     { name: 'FORMAT_NUMBER', params: ['number x', 'int d'], returnType: 'string', description: '将数字格式化为 #,###.## 格式', category: 'string' },
-    { name: 'GET_JSON_OBJECT', params: ['string json_str', 'string path'], returnType: 'string', description: '从 JSON 字符串中按路径提取值', category: 'json' },
     { name: 'IN_FILE', params: ['string str', 'string filename'], returnType: 'boolean', description: '判断 str 是否出现在文件中', category: 'string' },
     { name: 'INITCAP', params: ['string str'], returnType: 'string', description: '返回每个单词首字母大写的字符串', category: 'string' },
     { name: 'INSTR', params: ['string str', 'string substr'], returnType: 'int', description: '返回子串首次出现的位置（从 1 开始）', category: 'string' },
@@ -361,6 +360,9 @@ export const functionSignatures: FunctionSignature[] = [
     { name: 'UCASE', params: ['string str'], returnType: 'string', description: 'UPPER 的别名，返回全大写字符串', category: 'string' },
     { name: 'UNBASE64', params: ['string str'], returnType: 'binary', description: '将 Base64 字符串解码为二进制', category: 'string' },
     { name: 'UPPER', params: ['string str'], returnType: 'string', description: '返回全大写的字符串', category: 'string' },
+
+    // --- JSON (1) ---
+    { name: 'GET_JSON_OBJECT', params: ['string json_str', 'string path'], returnType: 'string', description: '从 JSON 字符串中按路径提取值', category: 'json' },
 
     // --- ENCRYPTION (13) ---
     { name: 'MASK', params: ['string str', 'string upper', 'string lower', 'string number'], returnType: 'string', description: '对字符串进行脱敏处理', category: 'encryption' },
