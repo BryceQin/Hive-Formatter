@@ -1,5 +1,16 @@
 # 更新日志
 
+## 0.18.0
+- 新增智能注释切换：Ctrl+/ 单行/多行自动切换，Ctrl+Shift+/ 高级模式（DDL 列注释、格式化禁用标记）
+- 新增注释模板补全：静态 Snippet（todo/fixme/hack/desc/section）+ 动态补全（header/col/tbl）
+- header 补全自动检测表依赖（FROM/JOIN 为输入表，INSERT INTO/CTAS 为输出表）
+- 新增 4 条注释 Lint 规则：复杂查询缺注释、DDL 列缺 COMMENT、注释掉的代码、过期 TODO/FIXME
+- 每条 Lint 规则均提供 Quick Fix 一键修复
+- Code Action 改用 diagnostic.code 匹配，更健壮
+- 新增状态栏临时消息反馈（添加/移除注释等操作后显示）
+- 右键菜单集成注释切换命令
+- 版本号升级到 0.18.0
+
 ## 0.17.0
 - 优化配置区布局，由 CSS Grid 改为 Multi-column 多列流式布局，消除配置组之间的大片空白
 - 配置组高度自适应，矮组不再被撑高，整体布局更紧凑

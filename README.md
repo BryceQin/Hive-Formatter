@@ -9,6 +9,7 @@
 - 📝 **多种 SQL 方言支持** - Hive、MySQL、SparkSQL、通用 SQL
 - 🎨 **丰富的格式化选项** - 关键字大小写、缩进风格、换行策略等
 - 🤖 **智能补全（IntelliSense）** - 关键字、函数签名、代码片段、CTE、标识符智能提示
+- 💬 **注释增强** - 智能注释切换、注释模板补全、注释 Lint 规则
 - 📏 **灵活的缩进配置** - 支持标准缩进和表格风格对齐
 - 🖥️ **可视化配置编辑器** - 现代化图形化配置界面，可折叠分组、Toggle 开关、实时预览格式化效果
 - 🔍 **增强的语法检查** - 15+ 项语法和代码质量检查，智能提示
@@ -21,7 +22,7 @@
 - 📁 **代码折叠** - 支持 CTE、子查询、函数块等代码块的折叠
 - 🗺️ **大纲视图** - 提供 SQL 文档的大纲视图，快速导航
 - 🔢 **参数化查询** - 支持变量高亮和批量替换功能
-- 🔍 **SQL Lint** - 内置 13+ 条 Lint 规则，支持自定义配置
+- 🔍 **SQL Lint** - 内置 17+ 条 Lint 规则，支持自定义配置
 
 ## 快速开始
 
@@ -116,6 +117,14 @@
 | `hivepart` | Hive 分区插入 |
 | `hiveselpart` | Hive 分区查询 |
 | `comment` | 注释头部 |
+| `todo` | TODO 注释（带责任人） |
+| `fixme` | FIXME 注释 |
+| `hack` | HACK 临时方案注释 |
+| `desc` | 查询说明注释块 |
+| `section` | 分区标题注释 |
+| `header` | 文件头注释（自动检测表依赖） |
+| `col` | 列 COMMENT |
+| `tbl` | 表 COMMENT |
 
 ## 智能补全
 
@@ -151,6 +160,41 @@
 | `completion.snippets` | 补全列表中是否包含代码片段 | `true` |
 | `completion.cteNames` | 是否提示 CTE 名称 | `true` |
 | `completion.identifiers` | 是否提示表名和列名 | `true` |
+| `completion.commentSnippets` | 补全列表中是否包含注释模板片段 | `true` |
+
+## 注释增强
+
+插件提供智能注释切换、注释模板补全和注释 Lint 规则三大注释增强功能。
+
+### 智能注释切换
+
+| 快捷键 | 功能 |
+|--------|------|
+| `Ctrl+/` / `Cmd+/` | 智能切换注释：单行用行注释，多行用块注释 |
+| `Ctrl+Shift+/` / `Cmd+Shift+/` | 高级注释：选中 SQL 语句包裹格式化禁用标记，DDL 列行添加 COMMENT，其他切换块注释 |
+
+### 注释模板补全
+
+输入前缀即可快速插入注释模板：
+
+| 前缀 | 说明 |
+|------|------|
+| `header` | 文件头注释（自动检测表依赖、作者、日期） |
+| `col` | 列 COMMENT（智能处理逗号位置） |
+| `tbl` | 表 COMMENT |
+| `todo` | TODO 注释（带责任人） |
+| `fixme` | FIXME 注释 |
+| `hack` | HACK 临时方案注释 |
+| `desc` | 查询说明注释块 |
+| `section` | 分区标题注释 |
+
+### 注释配置
+
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `enableSmartCommentToggle` | 是否启用 SQL 感知的智能注释切换 | `true` |
+| `headerAuthor` | 文件头注释中的作者名 | `""` |
+| `headerModifier` | 文件头注释中的修改人（为空时回退取 headerAuthor） | `""` |
 
 ## 扩展设置
 
@@ -182,7 +226,7 @@
 
 ## SQL Lint 功能
 
-插件提供强大的 SQL Lint 功能，内置 13+ 条规则，支持自定义配置：
+插件提供强大的 SQL Lint 功能，内置 17+ 条规则，支持自定义配置：
 
 ### Lint 规则列表
 
@@ -201,6 +245,10 @@
 | `long_query_line` | 建议将长查询多行格式化 | ❌ 禁用 | ℹ️ Info |
 | `explicit_column_aliasing` | 建议使用 AS 关键字明确指定列别名 | ❌ 禁用 | ℹ️ Info |
 | `uppercase_keywords` | 建议 SQL 关键字使用大写 | ❌ 禁用 | ℹ️ Info |
+| `missing_query_comment` | 复杂查询缺少说明注释 | ✅ 启用 | ⚠️ Warning |
+| `missing_column_comment` | DDL 列缺少 COMMENT | ✅ 启用 | ⚠️ Warning |
+| `commented_out_code` | 注释掉的代码 | ✅ 启用 | ℹ️ Info |
+| `expired_todo` | 过期的 TODO/FIXME | ✅ 启用 | ℹ️ Info |
 
 ### 配置 Lint 规则
 
