@@ -1,5 +1,9 @@
 # 更新日志
 
+## 0.18.2
+- 修复 header/col/tbl 补全项缺少 range 属性导致无法匹配用户输入
+- 添加 try-catch 保护，避免 extractTableDependencies 异常导致补全项全部消失
+
 ## 0.18.1
 - 修复 header/col/tbl 补全不生效：改用 SnippetString 构造函数避免占位符被转义
 - 修复补全项 label 包含中文导致模糊匹配失败，中文描述移至 detail/documentation

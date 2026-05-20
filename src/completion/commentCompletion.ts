@@ -5,10 +5,19 @@ export function getCommentCompletionItems(
     pos: vscode.Position
 ): vscode.CompletionItem[] {
     const items: vscode.CompletionItem[] = []
+    const wordRange = doc.getWordRangeAtPosition(pos, /[a-zA-Z_]\w*/)
 
-    items.push(createHeaderItem(doc))
-    items.push(createColItem(doc, pos))
-    items.push(createTblItem())
+    const header = createHeaderItem(doc)
+    if (wordRange) header.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
+    items.push(header)
+
+    const col = createColItem(doc, pos)
+    if (wordRange) col.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
+    items.push(col)
+
+    const tbl = createTblItem()
+    if (wordRange) tbl.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
+    items.push(tbl)
 
     return items
 }

@@ -87,7 +87,18 @@ export class SqlCompletionProvider implements vscode.CompletionItemProvider {
         if (this.cfg.snippets) items.push(...this.snippetItems)
         if (this.cfg.cteNames && doc.getText().trim()) items.push(...getCTEItems(doc, pos))
         if (this.cfg.identifiers && doc.getText().trim()) items.push(...getIdentifierItems(doc, pos, dialect.tokenizer))
-        if (this.cfg.commentSnippets && doc.getText().trim()) items.push(...getCommentCompletionItems(doc, pos))
+        if (this.cfg.commentSnippets && doc.getText().trim()) {
+            try {
+                items.push(...getCommentCompletionItems(doc, pos))
+            } catch {
+                const fallback = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
+                fallback.filterText = 'header'
+                fallback.sortText = '0_header'
+                fallback.detail = '文件头注释'
+                fallback.insertText = new vscode.SnippetString('-- ============================================================\n-- 脚本名称：$1\n-- 功能描述：$2\n-- 作者：$3\n-- 日期：$0\n-- ============================================================\n')
+                items.push(fallback)
+            }
+        }
 
         return items
     }
