@@ -176,16 +176,64 @@
         ],
         "description": "Hive select from partition"
     },
-    "Comment Header": {
-        "prefix": "comment",
+    "Column Comment": {
+        "prefix": "col",
         "body": [
-            "-- ===========================================",
-            "-- Description: $1",
-            "-- Author: ${2:Your Name}",
-            "-- Date: $CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE",
-            "-- ===========================================",
-            "$0"
+            "COMMENT '${1:列说明}'"
         ],
-        "description": "Comment header for SQL"
+        "description": "列 COMMENT 注释"
+    },
+    "Table Comment": {
+        "prefix": "tbl",
+        "body": [
+            "COMMENT '${1:表说明}'"
+        ],
+        "description": "表 COMMENT 注释"
+    },
+    "TODO Comment": {
+        "prefix": "todo",
+        "body": [
+            "-- TODO(${1:username}): ${2:description}"
+        ],
+        "description": "TODO 注释（带责任人）"
+    },
+    "FIXME Comment": {
+        "prefix": "fixme",
+        "body": [
+            "-- FIXME: ${1:description}",
+            "-- Reason: ${2:why this needs fixing}"
+        ],
+        "description": "FIXME 注释"
+    },
+    "HACK Comment": {
+        "prefix": "hack",
+        "body": [
+            "-- HACK: ${1:description}",
+            "-- TODO: ${2:proper solution}"
+        ],
+        "description": "HACK 临时方案注释"
+    },
+    "Query Description": {
+        "prefix": "desc",
+        "body": [
+            "-- ============================================",
+            "-- 查询说明：${1:功能描述}",
+            "-- 涉及表：${2:table_list}",
+            "-- 条件：${3:filter_conditions}",
+            "-- 输出：${4:output_description}",
+            "-- 作者：${5:author}",
+            "-- 日期：$CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE",
+            "-- ============================================"
+        ],
+        "description": "查询说明注释块"
+    },
+    "Section Comment": {
+        "prefix": "section",
+        "body": [
+            "-- ============================================================",
+            "-- ${1:section_title}",
+            "-- ============================================================"
+        ],
+        "description": "分区标题注释"
     }
 }

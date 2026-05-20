@@ -1,5 +1,46 @@
 # 更新日志
 
+## 0.18.4
+- 修复扩展无法激活：engines.vscode 版本要求过高（^1.108.1），降为 ^1.85.0
+- activate 函数添加 try-catch 容错保护，单个 Provider 创建失败不影响其他功能
+- header 补全恢复双轨策略：基础版由 VS Code 内置 snippet 提供，增强版（header+）由动态补全提供
+- 修复可视化配置保存后作者设置丢失
+- 修复可视化配置保存提示不准确
+
+## 0.18.3
+- 修复键入 header 无法触发注释补全：静态 snippet label 改用英文前缀，确保模糊匹配生效
+- 移除 sql.json 中的 Comment Header 静态 snippet，由动态补全统一提供 header 项
+- header 补全始终可用：有作者配置时自动填充作者/修改人/表依赖，无作者时提供基础模板
+- 修复可视化配置保存后作者设置丢失：_updateConfig 添加 try-catch 保护，避免单项失败阻塞后续保存
+- 修复 headerAuthor/headerModifier 空值处理：空值传 undefined 而非空字符串，避免 VS Code 误删配置
+- 修复可视化配置保存提示不准确：改为等待实际保存完成后才显示成功/失败提示
+
+## 0.18.2
+- 修复 header/col/tbl 补全项缺少 range 属性导致无法匹配用户输入
+- 添加 try-catch 保护，避免 extractTableDependencies 异常导致补全项全部消失
+
+## 0.18.1
+- 修复 header/col/tbl 补全不生效：改用 SnippetString 构造函数避免占位符被转义
+- 修复补全项 label 包含中文导致模糊匹配失败，中文描述移至 detail/documentation
+- 可视化配置编辑器新增「注释设置」组（作者、修改人、注释模板补全开关）
+
+## 0.18.0
+- 新增智能注释切换：Ctrl+/ 单行/多行自动切换，Ctrl+Shift+/ 高级模式（DDL 列注释、格式化禁用标记）
+- 新增注释模板补全：静态 Snippet（todo/fixme/hack/desc/section）+ 动态补全（header/col/tbl）
+- header 补全自动检测表依赖（FROM/JOIN 为输入表，INSERT INTO/CTAS 为输出表）
+- 新增 4 条注释 Lint 规则：复杂查询缺注释、DDL 列缺 COMMENT、注释掉的代码、过期 TODO/FIXME
+- 每条 Lint 规则均提供 Quick Fix 一键修复
+- Code Action 改用 diagnostic.code 匹配，更健壮
+- 新增状态栏临时消息反馈（添加/移除注释等操作后显示）
+- 右键菜单集成注释切换命令
+- 版本号升级到 0.18.0
+
+## 0.17.0
+- 优化配置区布局，由 CSS Grid 改为 Multi-column 多列流式布局，消除配置组之间的大片空白
+- 配置组高度自适应，矮组不再被撑高，整体布局更紧凑
+- 添加 break-inside: avoid 防止配置组跨列断裂
+- 版本号升级到 0.17.0
+
 ## 0.16.0
 - 优化可视化配置编辑器布局，由左右结构改为上下结构
 - 预览区移至顶部，内部改为左右分栏（输入 SQL | 格式化结果），空间利用更高效

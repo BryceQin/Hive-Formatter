@@ -40,6 +40,10 @@ export class SqlLinter {
             { id: "avoid_select_in_insert", name: "避免 INSERT SELECT *", description: "INSERT 语句中建议明确指定列名", defaultSeverity: vscode.DiagnosticSeverity.Warning, defaultEnabled: true, category: "best-practices" },
             { id: "long_query_line", name: "过长的查询行", description: "建议将长查询多行格式化", defaultSeverity: vscode.DiagnosticSeverity.Information, defaultEnabled: false, category: "code-style" },
             { id: "duplicate_column_aliases", name: "重复的列别名", description: "查询结果中有重复的列别名", defaultSeverity: vscode.DiagnosticSeverity.Warning, defaultEnabled: true, category: "code-style" },
+            { id: "missing_query_comment", name: "复杂查询缺少说明注释", description: "复杂查询（多行/多JOIN/多子查询）建议添加说明注释", defaultSeverity: vscode.DiagnosticSeverity.Warning, defaultEnabled: true, category: "best-practices" },
+            { id: "missing_column_comment", name: "DDL 列缺少 COMMENT", description: "CREATE TABLE 中的列定义建议添加 COMMENT 注释", defaultSeverity: vscode.DiagnosticSeverity.Warning, defaultEnabled: true, category: "best-practices" },
+            { id: "commented_out_code", name: "注释掉的代码", description: "发现疑似注释掉的大段代码，建议确认后删除或取消注释", defaultSeverity: vscode.DiagnosticSeverity.Information, defaultEnabled: true, category: "code-style" },
+            { id: "expired_todo", name: "过期的 TODO/FIXME", description: "TODO/FIXME 标记已过期，请确认是否仍需处理", defaultSeverity: vscode.DiagnosticSeverity.Information, defaultEnabled: true, category: "best-practices" },
         ]
 
         builtInRules.forEach(rule => {
@@ -119,6 +123,18 @@ export class SqlLinter {
         }
         if (this.isRuleEnabled('explicit_column_aliasing')) {
             this.checkExplicitColumnAliasing(text, document, diagnostics)
+        }
+        if (this.isRuleEnabled('missing_query_comment')) {
+            this.checkMissingQueryComment(text, document, diagnostics)
+        }
+        if (this.isRuleEnabled('missing_column_comment')) {
+            this.checkMissingColumnComment(text, document, diagnostics)
+        }
+        if (this.isRuleEnabled('commented_out_code')) {
+            this.checkCommentedOutCode(text, document, diagnostics)
+        }
+        if (this.isRuleEnabled('expired_todo')) {
+            this.checkExpiredTodo(text, document, diagnostics)
         }
 
         return diagnostics
@@ -287,7 +303,7 @@ export class SqlLinter {
 
     private checkLongQueryLine(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const lines = text.split('\n')
-        lines.forEach((line, index) => {
+        lines.forEach(line => {
             if (line.length > 120 && (line.toLowerCase().includes('select') || line.toLowerCase().includes('join') || line.toLowerCase().includes('where'))) {
                 this.addDiagnostic(text, document, diagnostics, text.indexOf(line), Math.min(line.length, 120), "建议将长查询多行格式化", "long_query_line")
             }
@@ -297,17 +313,304 @@ export class SqlLinter {
     private checkExplicitColumnAliasing(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const selectPattern = /\bselect\b(.*?)\bfrom\b/gi
         let selectMatch
-        
+
         while ((selectMatch = selectPattern.exec(text)) !== null) {
             const columnsPart = selectMatch[1]
             const aliasWithoutAs = /\b(\w+)\s+(\w+)\s*(?:,|$)/gi
             let match
-            
+
             while ((match = aliasWithoutAs.exec(columnsPart)) !== null) {
                 if (!match[0].toLowerCase().includes('as')) {
                     this.addDiagnostic(text, document, diagnostics, selectMatch.index + match.index, match[0].length, "建议使用 AS 关键字明确指定列别名", "explicit_column_aliasing")
                 }
             }
+        }
+    }
+
+    private checkMissingQueryComment(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
+        const config = vscode.workspace.getConfiguration('Hive-Formatter')
+        const thresholdLines = config.get<number>('lint.missing_query_comment_threshold_line_count', 20)
+        const thresholdJoins = config.get<number>('lint.missing_query_comment_threshold_join_count', 3)
+        const thresholdSubqueries = config.get<number>('lint.missing_query_comment_threshold_subquery_count', 2)
+
+        if (document.lineCount < 20) return
+
+        const selectPattern = /\bSELECT\b/gi
+        let match
+        while ((match = selectPattern.exec(text)) !== null) {
+            const selectStartLine = document.positionAt(match.index).line
+            const statementEnd = this.findStatementEnd(text, match.index)
+            const statementEndLine = document.positionAt(statementEnd).line
+            const lineCount = statementEndLine - selectStartLine + 1
+
+            const statementText = text.substring(match.index, statementEnd)
+            const joinCount = (statementText.match(/\bJOIN\b/gi) || []).length
+            const subqueryCount = (statementText.match(/\(\s*SELECT\b/gi) || []).length
+
+            const isComplex = lineCount >= thresholdLines || joinCount >= thresholdJoins || subqueryCount >= thresholdSubqueries
+            if (!isComplex) continue
+
+            const hasCommentAbove = this.hasCommentAboveLine(text, document, selectStartLine)
+            if (hasCommentAbove) continue
+
+            const details: string[] = []
+            if (lineCount >= thresholdLines) details.push(`${lineCount}行`)
+            if (joinCount >= thresholdJoins) details.push(`${joinCount}个JOIN`)
+            if (subqueryCount >= thresholdSubqueries) details.push(`${subqueryCount}个子查询`)
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, 6,
+                `复杂查询（${details.join('/')}）缺少说明注释，建议添加查询功能描述`,
+                "missing_query_comment"
+            )
+        }
+    }
+
+    private findStatementEnd(text: string, startIndex: number): number {
+        let depth = 0
+        let i = startIndex
+        while (i < text.length) {
+            if (text[i] === '(') depth++
+            else if (text[i] === ')') depth--
+            else if (text[i] === ';' && depth === 0) return i + 1
+            i++
+        }
+        return text.length
+    }
+
+    private hasCommentAboveLine(text: string, document: vscode.TextDocument, line: number): boolean {
+        for (let i = Math.max(0, line - 3); i < line; i++) {
+            const lineText = document.lineAt(i).text.trim()
+            if (lineText.startsWith('--') || lineText.startsWith('/*')) return true
+        }
+        return false
+    }
+
+    private checkMissingColumnComment(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
+        const config = vscode.workspace.getConfiguration('Hive-Formatter')
+        const aggregate = config.get<boolean>('lint.missing_column_comment_aggregate', true)
+        const externalExempt = config.get<boolean>('lint.missing_column_comment_external_table_exempt', false)
+
+        const createTablePattern = /\bCREATE\s+(?:EXTERNAL\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\w.]+\s*\(/gi
+        let ctMatch
+        while ((ctMatch = createTablePattern.exec(text)) !== null) {
+            const isExternal = /\bEXTERNAL\b/i.test(ctMatch[0])
+            if (externalExempt && isExternal) continue
+
+            const openParenIndex = ctMatch.index + ctMatch[0].length - 1
+            const closeParenIndex = this.findMatchingParen(text, openParenIndex)
+            if (closeParenIndex === -1) continue
+
+            const columnsText = text.substring(openParenIndex + 1, closeParenIndex)
+            const missingColumns: { name: string; index: number }[] = []
+
+            const lines = columnsText.split('\n')
+            let globalOffset = openParenIndex + 1
+            for (const line of lines) {
+                const trimmed = line.trim()
+                if (!trimmed) { globalOffset += line.length + 1; continue }
+                if (/^\s*(PRIMARY\s+KEY|CONSTRAINT|INDEX|KEY|UNIQUE|FOREIGN)/i.test(trimmed)) {
+                    globalOffset += line.length + 1
+                    continue
+                }
+                const colMatch = trimmed.match(/^(\w+)\s+\w+/)
+                if (colMatch && !/COMMENT\s+'/.test(trimmed)) {
+                    const colName = colMatch[1]
+                    const colStartInLine = line.indexOf(colName)
+                    missingColumns.push({
+                        name: colName,
+                        index: globalOffset + colStartInLine
+                    })
+                }
+                globalOffset += line.length + 1
+            }
+
+            if (missingColumns.length === 0) continue
+
+            if (aggregate && missingColumns.length > 1) {
+                this.addDiagnostic(
+                    text, document, diagnostics,
+                    ctMatch.index, ctMatch[0].indexOf('('),
+                    `CREATE TABLE 中有 ${missingColumns.length} 个列缺少 COMMENT 注释`,
+                    "missing_column_comment"
+                )
+            } else {
+                for (const col of missingColumns) {
+                    this.addDiagnostic(
+                        text, document, diagnostics,
+                        col.index, col.name.length,
+                        `列 '${col.name}' 缺少 COMMENT 注释`,
+                        "missing_column_comment"
+                    )
+                }
+            }
+        }
+    }
+
+    private findMatchingParen(text: string, openIndex: number): number {
+        let depth = 0
+        for (let i = openIndex; i < text.length; i++) {
+            if (text[i] === '(') depth++
+            else if (text[i] === ')') {
+                depth--
+                if (depth === 0) return i
+            }
+        }
+        return -1
+    }
+
+    private checkCommentedOutCode(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
+        const config = vscode.workspace.getConfiguration('Hive-Formatter')
+        const thresholdLines = config.get<number>('lint.commented_out_code_threshold_lines', 3)
+
+        const blockCommentPattern = /\/\*([\s\S]*?)\*\//g
+        let match
+        while ((match = blockCommentPattern.exec(text)) !== null) {
+            const content = match[1]
+            if (/sql-formatter-disable|sql-formatter-enable/i.test(content)) continue
+            if (/^(?:\s*--\s*)?(?:示例|Example|说明|Description|Note|注意)/im.test(content)) continue
+
+            const lines = content.split('\n').filter(l => l.trim().length > 0)
+            if (lines.length < thresholdLines) continue
+
+            const sqlKeywords = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'GROUP BY', 'ORDER BY', 'HAVING', 'UNION']
+            let keywordCount = 0
+            for (const kw of sqlKeywords) {
+                if (new RegExp(`\\b${kw}\\b`, 'i').test(content)) keywordCount++
+            }
+            if (keywordCount < 3) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, 2,
+                `发现注释掉的代码（${lines.length}行），建议确认后删除或取消注释`,
+                "commented_out_code"
+            )
+        }
+
+        const lineCommentGroups = this.findConsecutiveLineComments(text)
+        for (const group of lineCommentGroups) {
+            if (group.lineCount < thresholdLines) continue
+            const content = group.text
+            if (/sql-formatter-disable|sql-formatter-enable/i.test(content)) continue
+
+            const sqlKeywords = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'GROUP BY', 'ORDER BY', 'HAVING', 'UNION']
+            let keywordCount = 0
+            for (const kw of sqlKeywords) {
+                if (new RegExp(`\\b${kw}\\b`, 'i').test(content)) keywordCount++
+            }
+            if (keywordCount < 3) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                group.startIndex, 2,
+                `发现注释掉的代码（${group.lineCount}行），建议确认后删除或取消注释`,
+                "commented_out_code"
+            )
+        }
+    }
+
+    private findConsecutiveLineComments(text: string): { startIndex: number; lineCount: number; text: string }[] {
+        const groups: { startIndex: number; lineCount: number; text: string }[] = []
+        const lines = text.split('\n')
+        let groupStart = -1
+        let groupText = ''
+        let groupStartIndex = 0
+
+        for (let i = 0; i < lines.length; i++) {
+            const trimmed = lines[i].trim()
+            if (trimmed.startsWith('--')) {
+                if (groupStart === -1) {
+                    groupStart = i
+                    groupStartIndex = text.indexOf(lines[i])
+                    groupText = trimmed
+                } else {
+                    groupText += '\n' + trimmed
+                }
+            } else if (trimmed.length > 0) {
+                if (groupStart !== -1) {
+                    groups.push({ startIndex: groupStartIndex, lineCount: i - groupStart, text: groupText })
+                    groupStart = -1
+                    groupText = ''
+                }
+            }
+        }
+        if (groupStart !== -1) {
+            groups.push({ startIndex: groupStartIndex, lineCount: lines.length - groupStart, text: groupText })
+        }
+        return groups
+    }
+
+    private checkExpiredTodo(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
+        const config = vscode.workspace.getConfiguration('Hive-Formatter')
+        const gracePeriod = config.get<number>('lint.expired_todo_grace_period_days', 7)
+
+        const todoPattern = /--\s*(TODO|FIXME)\s*\(\s*(\d{4}[-/]\d{2}[-/]\d{2})\s*\):?\s*.*/gi
+        let match
+        while ((match = todoPattern.exec(text)) !== null) {
+            const dateStr = match[2].replace(/\//g, '-')
+            const todoDate = new Date(dateStr)
+            const now = new Date()
+            now.setHours(0, 0, 0, 0)
+
+            if (isNaN(todoDate.getTime())) continue
+
+            const diffMs = now.getTime() - todoDate.getTime()
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+            if (diffDays <= gracePeriod) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, match[0].length,
+                `TODO 标记已过期（${dateStr}），已超期 ${diffDays} 天，请确认是否仍需处理`,
+                "expired_todo"
+            )
+        }
+
+        const todoUserPattern = /--\s*(TODO|FIXME)\s*\([^),]+,\s*(\d{4}[-/]\d{2}[-/]\d{2})\s*\):?\s*.*/gi
+        while ((match = todoUserPattern.exec(text)) !== null) {
+            const dateStr = match[2].replace(/\//g, '-')
+            const todoDate = new Date(dateStr)
+            const now = new Date()
+            now.setHours(0, 0, 0, 0)
+
+            if (isNaN(todoDate.getTime())) continue
+
+            const diffMs = now.getTime() - todoDate.getTime()
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+            if (diffDays <= gracePeriod) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, match[0].length,
+                `TODO 标记已过期（${dateStr}），已超期 ${diffDays} 天，请确认是否仍需处理`,
+                "expired_todo"
+            )
+        }
+
+        const deadlinePattern = /--\s*(TODO|FIXME)[^\n]*@deadline\s+(\d{4}[-/]\d{2}[-/]\d{2})/gi
+        while ((match = deadlinePattern.exec(text)) !== null) {
+            const dateStr = match[2].replace(/\//g, '-')
+            const todoDate = new Date(dateStr)
+            const now = new Date()
+            now.setHours(0, 0, 0, 0)
+
+            if (isNaN(todoDate.getTime())) continue
+
+            const diffMs = now.getTime() - todoDate.getTime()
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+            if (diffDays <= gracePeriod) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, match[0].length,
+                `TODO 标记已过期（${dateStr}），已超期 ${diffDays} 天，请确认是否仍需处理`,
+                "expired_todo"
+            )
         }
     }
 }
