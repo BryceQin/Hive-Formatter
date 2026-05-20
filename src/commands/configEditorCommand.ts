@@ -278,10 +278,10 @@ export class ConfigEditorPanel {
         .section-header h2 { font-size: 14px; font-weight: 700; color: var(--text); }
         .section-body {
             padding: 16px 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 12px;
-            align-items: start;
+            column-width: 340px;
+            column-gap: 12px;
+            orphans: 1;
+            widows: 1;
         }
 
         /* ── Collapsible Config Group ── */
@@ -290,6 +290,8 @@ export class ConfigEditorPanel {
             border-radius: var(--radius);
             overflow: hidden;
             background: var(--surface2);
+            break-inside: avoid;
+            margin-bottom: 12px;
         }
         .cg-header {
             display: flex; align-items: center; gap: 8px;
