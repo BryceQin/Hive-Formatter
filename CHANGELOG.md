@@ -1,5 +1,102 @@
 # 更新日志
 
+## 0.16.0
+- 优化可视化配置编辑器布局，由左右结构改为上下结构
+- 预览区移至顶部，内部改为左右分栏（输入 SQL | 格式化结果），空间利用更高效
+- 配置区移至底部，9 个配置组改为多列网格布局，宽屏自动排 2-3 列
+- 新增可拖拽分割线，自由调整预览区高度（160px ~ 600px）
+- 整体视觉优化：更紧凑的间距、更柔和的边框、更精致的圆角
+- 容器最大宽度从 1260px 扩展到 1400px，更好利用宽屏空间
+- 版本号升级到 0.16.0
+
+## 0.15.0
+- 新增智能补全功能（IntelliSense / Auto-completion），大幅降低 SQL 编写心智负担
+- 支持关键字补全，输入 SEL 自动提示 SELECT，覆盖 Hive/MySQL/Spark/通用 SQL 四种方言
+- 支持函数补全（带签名、参数占位符、返回值类型和中文说明），合计 470+ 内置函数签名
+- 支持代码片段触发补全，在补全列表中展示已有的 17 个 SQL 代码片段
+- 支持 CTE 名称补全，定义 WITH 子句后自动提示 CTE 名称
+- 支持表名/列名上下文补全，根据当前 SQL 子句位置智能提示
+- 新增可配置的补全开关（enableCompletion、completion.keywords、completion.functions、completion.snippets、completion.cteNames、completion.identifiers）
+- 更新 package.json，添加补全相关配置项
+- 版本号升级到 0.15.0
+
+## 0.14.0
+- 全面美化可视化配置编辑器 UI，采用现代化卡片设计
+- 新增可折叠配置分组，用箭头动画展开/收拢，减少视觉噪音
+- 默认 checkbox 替换为 iOS 风格 Toggle Switch 开关，带流畅过渡动画
+- 优化 Lint 规则布局，规则名称 + 严重级别下拉 + 开关一览无余
+- 新增徽章计数器显示各组配置项数量
+- 新增保存成功 Toast 通知（2 秒自动消失）
+- 新增预览格式化结果绿色边框闪烁反馈
+- 新增输入框焦点蓝色辉光效果
+- 预设按钮改为圆角药丸芯片样式（pill chips）
+- 优化双栏布局，配置区更宽，预览区右侧 sticky 固定
+- 自定义暗色滚动条样式
+- 版本号升级到 0.14.0
+
+## 0.13.0
+- 修复 sqlDialects.ts 中语言 ID 不匹配问题（hql → hive），修复 .hql 文件格式化和诊断功能失效
+- 修复 package.json 中 enableEnhancedChecks 配置项重复定义
+- 修复 SqlParameterHightlighter 中 isSqlDocument 判断不一致问题，统一使用 sqlDialects
+- 修复 configEditor.test.ts 测试代码中的断言引用错误和常量缺失问题
+- 优化测试用例，全部核心功能测试通过
+- 版本号升级到 0.13.0
+
+## 0.12.0
+- 新增丰富的格式化配置项，提升用户定制化体验
+- 新增 commaPosition 配置，支持逗号在行首或行尾
+- 新增 alignColumnDefinitions 配置，支持对齐列定义
+- 新增 tabulateAlias 配置，支持对齐表别名
+- 新增 newlineAfterSelect 配置，控制 SELECT 关键字后是否换行
+- 新增 newlineAfterFrom 配置，控制 FROM 关键字后是否换行
+- 新增 newlineBeforeWhere 配置，控制 WHERE 关键字前是否换行
+- 新增 newlineAfterWhere 配置，控制 WHERE 关键字后是否换行
+- 新增 newlineBeforeOrderBy 配置，控制 ORDER BY 关键字前是否换行
+- 新增 newlineBeforeGroupBy 配置，控制 GROUP BY 关键字前是否换行
+- 新增 newlineBeforeHaving 配置，控制 HAVING 关键字前是否换行
+- 新增 newlineBeforeLimit 配置，控制 LIMIT 关键字前是否换行
+- 新增 maxLineLength 配置，设置最大行长度
+- 新增 reservedKeywordCase 配置，控制保留关键字大小写（SELECT, FROM, WHERE 等）
+- 新增 builtinFunctionCase 配置，控制内置函数大小写（COUNT, SUM, MAX 等）
+- 新增 newlineBeforeJoin 配置，控制 JOIN 关键字前是否换行
+- 新增 newlineAfterComma 配置，控制逗号后是否强制换行
+- 新增 alignWhereClauses 配置，控制 WHERE 子句是否对齐
+- 新增 alignCaseStatements 配置，控制 CASE 语句是否对齐
+- 新增 breakAfterSelectItem 配置，控制每个 SELECT 项后是否换行
+- 新增 breakAfterFromItem 配置，控制每个 FROM 项后是否换行
+- 新增 spaceBeforeComma 配置，控制逗号前是否加空格
+- 新增 spaceInsideParentheses 配置，控制括号内是否加空格
+- 新增 trimTrailingSpaces 配置，控制是否修剪尾部空格
+- 新增 semicolonAtEnd 配置，控制是否在语句结尾添加分号
+- 新增 singleLineMaxLength 配置，设置单行查询最大长度
+- 更新 package.json，添加所有新配置项
+- 更新 configEditorCommand.ts，在可视化配置编辑器中添加新选项（按功能分组展示）
+- 更新 FormatOptions.ts，添加新配置类型
+- 更新 sqlFormatter.ts，更新默认配置
+- 更新 core/config.ts，支持从 VS Code 配置中读取新选项
+- 更新 validateConfig.ts，移除 commaPosition 和 tabulateAlias 的废弃标记
+- 更新所有预设配置（default, hive, mysql, compact），支持新配置项
+- 版本号升级到 0.12.0
+
+## 0.11.3
+- 修复 JOIN ON 子句中的 ON 被误报为保留字标识符的问题
+- 改进保留字识别逻辑，增加扩展范围检查
+- 提高诊断规则的准确性
+- 版本号升级到 0.11.3
+
+## 0.11.2
+- 修复 SELECT WITH FROM 误报问题
+- 改进 SELECT without FROM 检测逻辑
+- 实现查询范围检测，正确识别 FROM 子句
+- 提高诊断规则的准确性，减少误报
+- 版本号升级到 0.11.2
+
+## 0.11.1
+- 优化主键检测规则，识别常见的id字段
+- 当表包含常见的主键字段名时（id, uuid, guid, _id等）不显示警告
+- 提高 lint 规则的智能性，减少误报
+- 版本号升级到 0.11.1
+
 ## 0.11.0
 - 修复配置编辑器中的 lint 错误
 - 移除未使用的导入和变量

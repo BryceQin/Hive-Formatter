@@ -1,8 +1,8 @@
 {
     "name": "hive-formatter",
     "displayName": "Hive Formatter",
-    "description": "一个用于 Hive、MySQL、SparkSQL 格式化的 VSCode 插件，支持 MySQL 与 HiveSQL 互相转换",
-    "version": "0.11.0",
+    "description": "一个用于 Hive、MySQL、SparkSQL 格式化的 VSCode 插件，支持 SQL IntelliSense 智能补全、语法检查和 MySQL/HiveSQL 互相转换",
+    "version": "0.16.0",
     "publisher": "bryce-qin",
     "contributors": [
         "TalDu"
@@ -230,6 +230,149 @@
                     "default": false,
                     "markdownDescription": "分号应另起一行还是放在上一行"
                 },
+                "Hive-Formatter.commaPosition": {
+                    "type": "string",
+                    "enum": [
+                        "before",
+                        "after"
+                    ],
+                    "default": "after",
+                    "markdownDescription": "逗号位置：放在行首还是行尾"
+                },
+                "Hive-Formatter.alignColumnDefinitions": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "是否对齐列定义"
+                },
+                "Hive-Formatter.newlineAfterSelect": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "SELECT 关键字后是否换行"
+                },
+                "Hive-Formatter.newlineAfterFrom": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "FROM 关键字后是否换行"
+                },
+                "Hive-Formatter.newlineBeforeWhere": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "WHERE 关键字前是否换行"
+                },
+                "Hive-Formatter.newlineAfterWhere": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "WHERE 关键字后是否换行"
+                },
+                "Hive-Formatter.newlineBeforeOrderBy": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "ORDER BY 关键字前是否换行"
+                },
+                "Hive-Formatter.newlineBeforeGroupBy": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "GROUP BY 关键字前是否换行"
+                },
+                "Hive-Formatter.newlineBeforeHaving": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "HAVING 关键字前是否换行"
+                },
+                "Hive-Formatter.newlineBeforeLimit": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "LIMIT 关键字前是否换行"
+                },
+                "Hive-Formatter.maxLineLength": {
+                    "type": "integer",
+                    "default": 120,
+                    "minimum": 40,
+                    "maximum": 500,
+                    "markdownDescription": "最大行长度"
+                },
+                "Hive-Formatter.tabulateAlias": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "是否对齐表别名"
+                },
+                "Hive-Formatter.reservedKeywordCase": {
+                    "type": "string",
+                    "enum": [
+                        "preserve",
+                        "upper",
+                        "lower"
+                    ],
+                    "default": "preserve",
+                    "markdownDescription": "保留关键字的大小写（SELECT, FROM, WHERE 等）"
+                },
+                "Hive-Formatter.builtinFunctionCase": {
+                    "type": "string",
+                    "enum": [
+                        "preserve",
+                        "upper",
+                        "lower"
+                    ],
+                    "default": "preserve",
+                    "markdownDescription": "内置函数的大小写（COUNT, SUM, MAX 等）"
+                },
+                "Hive-Formatter.newlineBeforeJoin": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "JOIN 关键字前是否换行"
+                },
+                "Hive-Formatter.newlineAfterComma": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "逗号后是否强制换行"
+                },
+                "Hive-Formatter.alignWhereClauses": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "WHERE 子句是否对齐"
+                },
+                "Hive-Formatter.alignCaseStatements": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "CASE 语句是否对齐"
+                },
+                "Hive-Formatter.breakAfterSelectItem": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "每个 SELECT 项后是否换行"
+                },
+                "Hive-Formatter.breakAfterFromItem": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "每个 FROM 项后是否换行"
+                },
+                "Hive-Formatter.spaceBeforeComma": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "逗号前是否加空格"
+                },
+                "Hive-Formatter.spaceInsideParentheses": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "括号内是否加空格"
+                },
+                "Hive-Formatter.trimTrailingSpaces": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否修剪尾部空格"
+                },
+                "Hive-Formatter.semicolonAtEnd": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否在语句结尾添加分号"
+                },
+                "Hive-Formatter.singleLineMaxLength": {
+                    "type": "integer",
+                    "default": 80,
+                    "minimum": 40,
+                    "maximum": 500,
+                    "markdownDescription": "单行查询最大长度"
+                },
                 "Hive-Formatter.paramTypes": {
                     "type": "object",
                     "markdownDescription": "指定要支持的参数占位符类型"
@@ -297,7 +440,97 @@
                 "Hive-Formatter.lint.duplicate_column_aliases": {
                     "type": "object",
                     "default": { "enabled": true, "severity": "warning" },
-                    "markdownDescription": "配置 `duplicate_column_aliases` 规则"
+                    "markdownDescription": "配置 \"duplicate_column_aliases\" 规则"
+                },
+                "Hive-Formatter.lint.uppercase_keywords": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "information" },
+                    "markdownDescription": "配置 \"uppercase_keywords\" 规则"
+                },
+                "Hive-Formatter.lint.consistent_aliasing": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "information" },
+                    "markdownDescription": "配置 \"consistent_aliasing\" 规则"
+                },
+                "Hive-Formatter.lint.use_coalesce_over_isnull": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "information" },
+                    "markdownDescription": "配置 \"use_coalesce_over_isnull\" 规则"
+                },
+                "Hive-Formatter.lint.explicit_column_aliasing": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "information" },
+                    "markdownDescription": "配置 \"explicit_column_aliasing\" 规则"
+                },
+                "Hive-Formatter.lint.avoid_correlated_subqueries": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "warning" },
+                    "markdownDescription": "配置 \"avoid_correlated_subqueries\" 规则"
+                },
+                "Hive-Formatter.lint.long_query_line": {
+                    "type": "object",
+                    "default": { "enabled": false, "severity": "information" },
+                    "markdownDescription": "配置 \"long_query_line\" 规则"
+                },
+                "Hive-Formatter.enableCodeFolding": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用代码折叠功能"
+                },
+                "Hive-Formatter.enableOutlineView": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用大纲视图功能"
+                },
+                "Hive-Formatter.enableStatusBar": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用状态栏功能"
+                },
+                "Hive-Formatter.enableParameterHighlight": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用参数高亮和替换功能"
+                },
+                "Hive-Formatter.enableSnippets": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用代码片段功能"
+                },
+                "Hive-Formatter.enableQuickFix": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用快速修复功能"
+                },
+                "Hive-Formatter.enableCompletion": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否启用智能补全功能"
+                },
+                "Hive-Formatter.completion.keywords": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含关键字"
+                },
+                "Hive-Formatter.completion.functions": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含函数"
+                },
+                "Hive-Formatter.completion.snippets": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "补全列表中是否包含代码片段"
+                },
+                "Hive-Formatter.completion.cteNames": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否提示 CTE 名称"
+                },
+                "Hive-Formatter.completion.identifiers": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "是否提示表名和列名"
                 }
             }
         }

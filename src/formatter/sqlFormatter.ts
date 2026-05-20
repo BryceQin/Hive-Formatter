@@ -8,10 +8,7 @@ import { ConfigError, validateConfig } from "./validateConfig"
 /**
  * 方言名称映射，用于将传入的方言名标准化
  */
-const dialectNameMap: Record<
-    keyof typeof allDialects,
-    keyof typeof allDialects
-> = {
+const dialectNameMap: Record<string, string> = {
     hive: "hive",
     mysql: "mysql",
     spark: "spark",
@@ -41,16 +38,41 @@ export type FormatOptionsWithDialect = Partial<FormatOptions> & {
 const defaultOptions: FormatOptions = {
     tabWidth: 4,
     useTabs: false,
-    keywordCase: "preserve",
-    identifierCase: "preserve",
-    dataTypeCase: "preserve",
-    functionCase: "preserve",
-    indentStyle: "standard",
-    logicalOperatorNewline: "before",
+    keywordCase: 'preserve',
+    identifierCase: 'preserve',
+    dataTypeCase: 'preserve',
+    functionCase: 'preserve',
+    indentStyle: 'standard',
+    logicalOperatorNewline: 'before',
     expressionWidth: 50,
     linesBetweenQueries: 1,
     denseOperators: false,
     newlineBeforeSemicolon: false,
+    commaPosition: 'after',
+    alignColumnDefinitions: false,
+    newlineAfterSelect: true,
+    newlineAfterFrom: true,
+    newlineBeforeWhere: true,
+    newlineAfterWhere: true,
+    newlineBeforeOrderBy: true,
+    newlineBeforeGroupBy: true,
+    newlineBeforeHaving: true,
+    newlineBeforeLimit: true,
+    maxLineLength: 120,
+    tabulateAlias: false,
+    reservedKeywordCase: 'preserve',
+    builtinFunctionCase: 'preserve',
+    newlineBeforeJoin: true,
+    newlineAfterComma: true,
+    alignWhereClauses: false,
+    alignCaseStatements: false,
+    breakAfterSelectItem: true,
+    breakAfterFromItem: true,
+    spaceBeforeComma: false,
+    spaceInsideParentheses: false,
+    trimTrailingSpaces: true,
+    semicolonAtEnd: true,
+    singleLineMaxLength: 80,
 }
 
 /**
@@ -75,7 +97,7 @@ export const format = (
     // 调用底层格式化函数，传入完整的方言配置
     return formatDialect(query, {
         ...cfg,
-        dialect: allDialects[canonicalDialectName],
+        dialect: allDialects[canonicalDialectName as keyof typeof allDialects] as DialectOptions,
     })
 }
 
