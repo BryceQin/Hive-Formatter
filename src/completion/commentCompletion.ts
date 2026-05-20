@@ -11,41 +11,11 @@ export function getCommentCompletionItems(
     const hasAuthor = author.length > 0
     const hasDependencies = inputTables.length > 0 || outputTables.length > 0
 
+    if (!hasAuthor && !hasDependencies) return []
+
     const items: vscode.CompletionItem[] = []
-
-    if (hasAuthor || hasDependencies) {
-        items.push(createEnhancedHeaderItem(doc, author, modifier, inputTables, outputTables))
-    } else {
-        items.push(createBasicHeaderItem(doc))
-    }
-
+    items.push(createEnhancedHeaderItem(doc, author, modifier, inputTables, outputTables))
     return items
-}
-
-function createBasicHeaderItem(doc: vscode.TextDocument): vscode.CompletionItem {
-    const item = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
-    item.sortText = '0_header'
-    item.detail = '文件头注释'
-    item.documentation = new vscode.MarkdownString('文件头注释模板（在可视化配置中设置作者后可自动填充）')
-
-    const fileName = doc.fileName.split('/').pop()?.replace(/\.\w+$/, '') || 'script_name'
-    const today = new Date().toISOString().slice(0, 10)
-
-    const snippetStr = [
-        '-- ============================================================',
-        `-- 脚本名称：\${1:${fileName}}`,
-        '-- 功能描述：$2',
-        '-- 作者：${3:author}',
-        `-- 创建时间：\${4:${today}}`,
-        '-- ============================================================',
-        '-- 修改记录：',
-        '--   日期         修改人       修改内容',
-        `--   \${5:${today}}  \${6:modifier}     \${7:初始版本}`,
-        '-- ============================================================',
-    ].join('\n') + '\n$0'
-
-    item.insertText = new vscode.SnippetString(snippetStr)
-    return item
 }
 
 function createEnhancedHeaderItem(
@@ -55,9 +25,10 @@ function createEnhancedHeaderItem(
     inputTables: string[],
     outputTables: string[]
 ): vscode.CompletionItem {
-    const item = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
-    item.sortText = '0_header'
-    item.detail = '文件头注释（含作者/表依赖）'
+    const item = new vscode.CompletionItem('header+', vscode.CompletionItemKind.Snippet)
+    item.filterText = 'header'
+    item.sortText = '0_header_enhanced'
+    item.detail = '文件头注释（增强版 - 含作者/表依赖）'
     item.documentation = new vscode.MarkdownString('自动填充作者和上下游表依赖的文件头注释模板')
 
     const fileName = doc.fileName.split('/').pop()?.replace(/\.\w+$/, '') || 'script_name'
