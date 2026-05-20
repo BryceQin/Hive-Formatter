@@ -39,6 +39,7 @@ const vscode = __importStar(require("vscode"));
 const SqlFormattingProvider_1 = require("./providers/SqlFormattingProvider");
 const sqlDialects_1 = require("./core/sqlDialects");
 const formatSelectionCommand_1 = require("./commands/formatSelectionCommand");
+const commentCommands_1 = require("./commands/commentCommands");
 const converterCommands_1 = require("./commands/converterCommands");
 const SqlDiagnosticsProvider_1 = require("./providers/SqlDiagnosticsProvider");
 const configEditorCommand_1 = require("./commands/configEditorCommand");
@@ -58,7 +59,7 @@ function activate(context) {
     parameterHighlighter = new SqlParameterHightlighter_1.SqlParameterHighlighter();
     const completionProvider = new completion_1.SqlCompletionProvider(context.extensionUri.fsPath);
     const triggerChars = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.'];
-    context.subscriptions.push(vscode.commands.registerCommand("hive-formatter.format-selection", formatSelectionCommand_1.formatSelectionCommand), vscode.commands.registerCommand("hive-formatter.mysql-to-hive", converterCommands_1.convertMysqlToHiveCommand), vscode.commands.registerCommand("hive-formatter.hive-to-mysql", converterCommands_1.convertHiveToMysqlCommand), vscode.commands.registerCommand("hive-formatter.open-config-editor", () => (0, configEditorCommand_1.openConfigEditorCommand)(context.extensionUri)), ...registerFormattingProviderForEachDialect(), vscode.workspace.onDidChangeTextDocument((event) => {
+    context.subscriptions.push(vscode.commands.registerCommand("hive-formatter.format-selection", formatSelectionCommand_1.formatSelectionCommand), vscode.commands.registerCommand("hive-formatter.toggleComment", commentCommands_1.toggleComment), vscode.commands.registerCommand("hive-formatter.toggleAdvancedComment", commentCommands_1.toggleAdvancedComment), vscode.commands.registerCommand("hive-formatter.mysql-to-hive", converterCommands_1.convertMysqlToHiveCommand), vscode.commands.registerCommand("hive-formatter.hive-to-mysql", converterCommands_1.convertHiveToMysqlCommand), vscode.commands.registerCommand("hive-formatter.open-config-editor", () => (0, configEditorCommand_1.openConfigEditorCommand)(context.extensionUri)), ...registerFormattingProviderForEachDialect(), vscode.workspace.onDidChangeTextDocument((event) => {
         const document = event.document;
         if (isSqlDocument(document)) {
             diagnosticsProvider.provideDiagnostics(document);

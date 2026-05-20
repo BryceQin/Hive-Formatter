@@ -303,7 +303,7 @@ export class SqlLinter {
 
     private checkLongQueryLine(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const lines = text.split('\n')
-        lines.forEach((line, index) => {
+        lines.forEach(line => {
             if (line.length > 120 && (line.toLowerCase().includes('select') || line.toLowerCase().includes('join') || line.toLowerCase().includes('where'))) {
                 this.addDiagnostic(text, document, diagnostics, text.indexOf(line), Math.min(line.length, 120), "建议将长查询多行格式化", "long_query_line")
             }
@@ -489,7 +489,7 @@ export class SqlLinter {
             )
         }
 
-        const lineCommentGroups = this.findConsecutiveLineComments(text, document)
+        const lineCommentGroups = this.findConsecutiveLineComments(text)
         for (const group of lineCommentGroups) {
             if (group.lineCount < thresholdLines) continue
             const content = group.text
@@ -511,7 +511,7 @@ export class SqlLinter {
         }
     }
 
-    private findConsecutiveLineComments(text: string, document: vscode.TextDocument): { startIndex: number; lineCount: number; text: string }[] {
+    private findConsecutiveLineComments(text: string): { startIndex: number; lineCount: number; text: string }[] {
         const groups: { startIndex: number; lineCount: number; text: string }[] = []
         const lines = text.split('\n')
         let groupStart = -1
@@ -546,10 +546,32 @@ export class SqlLinter {
         const config = vscode.workspace.getConfiguration('Hive-Formatter')
         const gracePeriod = config.get<number>('lint.expired_todo_grace_period_days', 7)
 
-        const todoPattern = new RegExp('--\\s*(TODO|FIXME)\\s*[\\(\uff08]([^)\uff09,\uff0c]*?[,\\uff0c]?\\s*(\\d{4}[-/]\\d{2}[-/]\\d{2})\\s*[\\)\uff09]:?\\s*.*', 'gi')
+        const todoPattern = /--\s*(TODO|FIXME)\s*\(\s*(\d{4}[-/]\d{2}[-/]\d{2})\s*\):?\s*.*/gi
         let match
         while ((match = todoPattern.exec(text)) !== null) {
-            const dateStr = match[3].replace(/\//g, '-')
+            const dateStr = match[2].replace(/\//g, '-')
+            const todoDate = new Date(dateStr)
+            const now = new Date()
+            now.setHours(0, 0, 0, 0)
+
+            if (isNaN(todoDate.getTime())) continue
+
+            const diffMs = now.getTime() - todoDate.getTime()
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+            if (diffDays <= gracePeriod) continue
+
+            this.addDiagnostic(
+                text, document, diagnostics,
+                match.index, match[0].length,
+                `TODO 标记已过期（${dateStr}），已超期 ${diffDays} 天，请确认是否仍需处理`,
+                "expired_todo"
+            )
+        }
+
+        const todoUserPattern = /--\s*(TODO|FIXME)\s*\([^),]+,\s*(\d{4}[-/]\d{2}[-/]\d{2})\s*\):?\s*.*/gi
+        while ((match = todoUserPattern.exec(text)) !== null) {
+            const dateStr = match[2].replace(/\//g, '-')
             const todoDate = new Date(dateStr)
             const now = new Date()
             now.setHours(0, 0, 0, 0)

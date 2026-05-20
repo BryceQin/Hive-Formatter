@@ -6,14 +6,14 @@ export function getCommentCompletionItems(
 ): vscode.CompletionItem[] {
     const items: vscode.CompletionItem[] = []
 
-    items.push(createHeaderItem(doc, pos))
+    items.push(createHeaderItem(doc))
     items.push(createColItem(doc, pos))
-    items.push(createTblItem(doc, pos))
+    items.push(createTblItem())
 
     return items
 }
 
-function createHeaderItem(doc: vscode.TextDocument, pos: vscode.Position): vscode.CompletionItem {
+function createHeaderItem(doc: vscode.TextDocument): vscode.CompletionItem {
     const item = new vscode.CompletionItem('header - 文件头注释', vscode.CompletionItemKind.Snippet)
     item.filterText = 'header'
     item.sortText = '0_header'
@@ -104,7 +104,7 @@ function createColItem(doc: vscode.TextDocument, pos: vscode.Position): vscode.C
     return item
 }
 
-function createTblItem(doc: vscode.TextDocument, pos: vscode.Position): vscode.CompletionItem {
+function createTblItem(): vscode.CompletionItem {
     const item = new vscode.CompletionItem('tbl - 表 COMMENT', vscode.CompletionItemKind.Snippet)
     item.filterText = 'tbl'
     item.sortText = '0_tbl'

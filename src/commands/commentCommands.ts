@@ -48,11 +48,11 @@ function toggleBlockComment(editor: vscode.TextEditor): void {
     if (trimmed.startsWith('/*') && trimmed.endsWith('*/')) {
         removeBlockComment(editor, selection, text)
     } else {
-        addBlockComment(editor, selection, text)
+        addBlockComment(editor, selection)
     }
 }
 
-function addBlockComment(editor: vscode.TextEditor, selection: vscode.Selection, text: string): void {
+function addBlockComment(editor: vscode.TextEditor, selection: vscode.Selection): void {
     const edit = new vscode.WorkspaceEdit()
     const startPos = editor.document.offsetAt(selection.start)
     const endPos = editor.document.offsetAt(selection.end)
