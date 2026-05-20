@@ -116,7 +116,7 @@
 | `union` | UNION ALL |
 | `hivepart` | Hive 分区插入 |
 | `hiveselpart` | Hive 分区查询 |
-| `comment` | 注释头部 |
+| `header` | 文件头注释（配置作者后自动填充，自动检测表依赖） |
 | `todo` | TODO 注释（带责任人） |
 | `fixme` | FIXME 注释 |
 | `hack` | HACK 临时方案注释 |
@@ -179,7 +179,7 @@
 
 | 前缀 | 说明 |
 |------|------|
-| `header` | 文件头注释（自动检测表依赖、作者、日期） |
+| `header` | 文件头注释（配置作者后自动填充作者和修改人，自动检测上下游表依赖） |
 | `col` | 列 COMMENT（智能处理逗号位置） |
 | `tbl` | 表 COMMENT |
 | `todo` | TODO 注释（带责任人） |

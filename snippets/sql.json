@@ -176,17 +176,19 @@
         ],
         "description": "Hive select from partition"
     },
-    "Comment Header": {
-        "prefix": "comment",
+    "Column Comment": {
+        "prefix": "col",
         "body": [
-            "-- ===========================================",
-            "-- Description: $1",
-            "-- Author: ${2:Your Name}",
-            "-- Date: $CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE",
-            "-- ===========================================",
-            "$0"
+            "COMMENT '${1:列说明}'"
         ],
-        "description": "Comment header for SQL"
+        "description": "列 COMMENT 注释"
+    },
+    "Table Comment": {
+        "prefix": "tbl",
+        "body": [
+            "COMMENT '${1:表说明}'"
+        ],
+        "description": "表 COMMENT 注释"
     },
     "TODO Comment": {
         "prefix": "todo",

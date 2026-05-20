@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.18.3
+- 修复键入 header 无法触发注释补全：静态 snippet label 改用英文前缀，确保模糊匹配生效
+- 移除 sql.json 中的 Comment Header 静态 snippet，由动态补全统一提供 header 项
+- header 补全始终可用：有作者配置时自动填充作者/修改人/表依赖，无作者时提供基础模板
+- 修复可视化配置保存后作者设置丢失：_updateConfig 添加 try-catch 保护，避免单项失败阻塞后续保存
+- 修复 headerAuthor/headerModifier 空值处理：空值传 undefined 而非空字符串，避免 VS Code 误删配置
+- 修复可视化配置保存提示不准确：改为等待实际保存完成后才显示成功/失败提示
+
 ## 0.18.2
 - 修复 header/col/tbl 补全项缺少 range 属性导致无法匹配用户输入
 - 添加 try-catch 保护，避免 extractTableDependencies 异常导致补全项全部消失

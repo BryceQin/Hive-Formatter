@@ -4,42 +4,68 @@ export function getCommentCompletionItems(
     doc: vscode.TextDocument,
     pos: vscode.Position
 ): vscode.CompletionItem[] {
+    const config = vscode.workspace.getConfiguration('Hive-Formatter')
+    const author = config.get<string>('headerAuthor', '')
+    const modifier = config.get<string>('headerModifier', '') || author
+    const { inputTables, outputTables } = extractTableDependencies(doc.getText())
+    const hasAuthor = author.length > 0
+    const hasDependencies = inputTables.length > 0 || outputTables.length > 0
+
     const items: vscode.CompletionItem[] = []
-    const wordRange = doc.getWordRangeAtPosition(pos, /[a-zA-Z_]\w*/)
 
-    const header = createHeaderItem(doc)
-    if (wordRange) header.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
-    items.push(header)
-
-    const col = createColItem(doc, pos)
-    if (wordRange) col.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
-    items.push(col)
-
-    const tbl = createTblItem()
-    if (wordRange) tbl.range = { inserting: new vscode.Range(wordRange.start, pos), replacing: wordRange }
-    items.push(tbl)
+    if (hasAuthor || hasDependencies) {
+        items.push(createEnhancedHeaderItem(doc, author, modifier, inputTables, outputTables))
+    } else {
+        items.push(createBasicHeaderItem(doc))
+    }
 
     return items
 }
 
-function createHeaderItem(doc: vscode.TextDocument): vscode.CompletionItem {
+function createBasicHeaderItem(doc: vscode.TextDocument): vscode.CompletionItem {
     const item = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
-    item.filterText = 'header'
     item.sortText = '0_header'
-    item.detail = '文件头注释（自动检测表依赖）'
-    item.documentation = new vscode.MarkdownString('插入完整的文件头注释模板，包含脚本名称、功能描述、作者、修改记录、上下游表依赖')
+    item.detail = '文件头注释'
+    item.documentation = new vscode.MarkdownString('文件头注释模板（在可视化配置中设置作者后可自动填充）')
 
-    const config = vscode.workspace.getConfiguration('Hive-Formatter')
-    const author = config.get<string>('headerAuthor', '')
-    const modifier = config.get<string>('headerModifier', '') || author
+    const fileName = doc.fileName.split('/').pop()?.replace(/\.\w+$/, '') || 'script_name'
+    const today = new Date().toISOString().slice(0, 10)
+
+    const snippetStr = [
+        '-- ============================================================',
+        `-- 脚本名称：\${1:${fileName}}`,
+        '-- 功能描述：$2',
+        '-- 作者：${3:author}',
+        `-- 创建时间：\${4:${today}}`,
+        '-- ============================================================',
+        '-- 修改记录：',
+        '--   日期         修改人       修改内容',
+        `--   \${5:${today}}  \${6:modifier}     \${7:初始版本}`,
+        '-- ============================================================',
+    ].join('\n') + '\n$0'
+
+    item.insertText = new vscode.SnippetString(snippetStr)
+    return item
+}
+
+function createEnhancedHeaderItem(
+    doc: vscode.TextDocument,
+    author: string,
+    modifier: string,
+    inputTables: string[],
+    outputTables: string[]
+): vscode.CompletionItem {
+    const item = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
+    item.sortText = '0_header'
+    item.detail = '文件头注释（含作者/表依赖）'
+    item.documentation = new vscode.MarkdownString('自动填充作者和上下游表依赖的文件头注释模板')
+
     const fileName = doc.fileName.split('/').pop()?.replace(/\.\w+$/, '') || 'script_name'
     const today = new Date().toISOString().slice(0, 10)
 
     const existingHeader = doc.getText(new vscode.Range(0, 0, Math.min(doc.lineCount, 10), 0))
     const existingDateMatch = existingHeader.match(/创建时间[：:]\s*(\d{4}-\d{2}-\d{2})/)
     const createDate = existingDateMatch ? existingDateMatch[1] : today
-
-    const { inputTables, outputTables } = extractTableDependencies(doc.getText())
 
     const inputTableLines = inputTables.length > 0
         ? inputTables.map(t => `--     - ${t}`).join('\n')
@@ -69,59 +95,6 @@ function createHeaderItem(doc: vscode.TextDocument): vscode.CompletionItem {
     ].join('\n') + '\n$0'
 
     item.insertText = new vscode.SnippetString(snippetStr)
-    return item
-}
-
-function createColItem(doc: vscode.TextDocument, pos: vscode.Position): vscode.CompletionItem {
-    const item = new vscode.CompletionItem('col', vscode.CompletionItemKind.Snippet)
-    item.filterText = 'col'
-    item.sortText = '0_col'
-    item.detail = '列 COMMENT 注释'
-
-    const line = doc.lineAt(pos.line).text
-    const trimmed = line.trimEnd()
-
-    if (/COMMENT\s+'/.test(line)) {
-        const snippet = new vscode.SnippetString()
-        snippet.appendTabstop(0)
-        item.insertText = snippet
-        return item
-    }
-
-    const hasComma = trimmed.endsWith(',')
-    const snippet = new vscode.SnippetString()
-
-    if (hasComma) {
-        snippet.appendText(" COMMENT '")
-        snippet.appendPlaceholder('列说明', 1)
-        snippet.appendText("',")
-        const commaIndex = line.lastIndexOf(',')
-        const deleteRange = new vscode.Range(
-            pos.line, commaIndex,
-            pos.line, commaIndex + 1
-        )
-        item.additionalTextEdits = [vscode.TextEdit.delete(deleteRange)]
-    } else {
-        snippet.appendText(" COMMENT '")
-        snippet.appendPlaceholder('列说明', 1)
-        snippet.appendText("'")
-    }
-
-    item.insertText = snippet
-    return item
-}
-
-function createTblItem(): vscode.CompletionItem {
-    const item = new vscode.CompletionItem('tbl', vscode.CompletionItemKind.Snippet)
-    item.filterText = 'tbl'
-    item.sortText = '0_tbl'
-    item.detail = '表 COMMENT 注释'
-
-    const snippet = new vscode.SnippetString()
-    snippet.appendText("COMMENT '")
-    snippet.appendPlaceholder('表说明', 1)
-    snippet.appendText("'")
-    item.insertText = snippet
     return item
 }
 

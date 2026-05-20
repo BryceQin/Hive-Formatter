@@ -91,12 +91,7 @@ export class SqlCompletionProvider implements vscode.CompletionItemProvider {
             try {
                 items.push(...getCommentCompletionItems(doc, pos))
             } catch {
-                const fallback = new vscode.CompletionItem('header', vscode.CompletionItemKind.Snippet)
-                fallback.filterText = 'header'
-                fallback.sortText = '0_header'
-                fallback.detail = '文件头注释'
-                fallback.insertText = new vscode.SnippetString('-- ============================================================\n-- 脚本名称：$1\n-- 功能描述：$2\n-- 作者：$3\n-- 日期：$0\n-- ============================================================\n')
-                items.push(fallback)
+                // dynamic comment completion failed, static snippets from sql.json still work
             }
         }
 

@@ -45,7 +45,12 @@ export class ConfigEditorPanel {
             async (message) => {
                 switch (message.command) {
                     case 'updateConfig':
-                        await this._updateConfig(message.data)
+                        try {
+                            await this._updateConfig(message.data)
+                            this._panel.webview.postMessage({ command: 'saveResult', success: true })
+                        } catch {
+                            this._panel.webview.postMessage({ command: 'saveResult', success: false })
+                        }
                         break
                     case 'resetConfig':
                         await this._resetConfig()
@@ -1273,6 +1278,13 @@ export class ConfigEditorPanel {
                 case 'previewResult':
                     showPreviewResult(message.data);
                     break;
+                case 'saveResult':
+                    if (message.success) {
+                        showToast('配置已保存', 'success');
+                    } else {
+                        showToast('保存失败，请重试', 'error');
+                    }
+                    break;
             }
         });
         
@@ -1391,7 +1403,6 @@ export class ConfigEditorPanel {
         function saveConfig() {
             const config = collectConfig();
             vscode.postMessage({ command: 'updateConfig', data: config });
-            showToast('配置已保存', 'success');
         }
         
         function showToast(message, type) {
@@ -1586,79 +1597,93 @@ export class ConfigEditorPanel {
 
     private async _updateConfig(data: Record<string, unknown>) {
         const config = vscode.workspace.getConfiguration('Hive-Formatter')
-        await config.update('dialect', data.dialect, vscode.ConfigurationTarget.Global)
-        await config.update('keywordCase', data.keywordCase, vscode.ConfigurationTarget.Global)
-        await config.update('dataTypeCase', data.dataTypeCase, vscode.ConfigurationTarget.Global)
-        await config.update('functionCase', data.functionCase, vscode.ConfigurationTarget.Global)
-        await config.update('identifierCase', data.identifierCase, vscode.ConfigurationTarget.Global)
-        await config.update('indentStyle', data.indentStyle, vscode.ConfigurationTarget.Global)
-        await config.update('logicalOperatorNewline', data.logicalOperatorNewline, vscode.ConfigurationTarget.Global)
-        await config.update('expressionWidth', data.expressionWidth, vscode.ConfigurationTarget.Global)
-        await config.update('linesBetweenQueries', data.linesBetweenQueries, vscode.ConfigurationTarget.Global)
-        await config.update('denseOperators', data.denseOperators, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeSemicolon', data.newlineBeforeSemicolon, vscode.ConfigurationTarget.Global)
-        await config.update('commaPosition', data.commaPosition, vscode.ConfigurationTarget.Global)
-        await config.update('alignColumnDefinitions', data.alignColumnDefinitions, vscode.ConfigurationTarget.Global)
-        await config.update('newlineAfterSelect', data.newlineAfterSelect, vscode.ConfigurationTarget.Global)
-        await config.update('newlineAfterFrom', data.newlineAfterFrom, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeWhere', data.newlineBeforeWhere, vscode.ConfigurationTarget.Global)
-        await config.update('newlineAfterWhere', data.newlineAfterWhere, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeOrderBy', data.newlineBeforeOrderBy, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeGroupBy', data.newlineBeforeGroupBy, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeHaving', data.newlineBeforeHaving, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeLimit', data.newlineBeforeLimit, vscode.ConfigurationTarget.Global)
-        await config.update('maxLineLength', data.maxLineLength, vscode.ConfigurationTarget.Global)
-        await config.update('tabulateAlias', data.tabulateAlias, vscode.ConfigurationTarget.Global)
-        await config.update('reservedKeywordCase', data.reservedKeywordCase, vscode.ConfigurationTarget.Global)
-        await config.update('builtinFunctionCase', data.builtinFunctionCase, vscode.ConfigurationTarget.Global)
-        await config.update('newlineBeforeJoin', data.newlineBeforeJoin, vscode.ConfigurationTarget.Global)
-        await config.update('newlineAfterComma', data.newlineAfterComma, vscode.ConfigurationTarget.Global)
-        await config.update('alignWhereClauses', data.alignWhereClauses, vscode.ConfigurationTarget.Global)
-        await config.update('alignCaseStatements', data.alignCaseStatements, vscode.ConfigurationTarget.Global)
-        await config.update('breakAfterSelectItem', data.breakAfterSelectItem, vscode.ConfigurationTarget.Global)
-        await config.update('breakAfterFromItem', data.breakAfterFromItem, vscode.ConfigurationTarget.Global)
-        await config.update('spaceBeforeComma', data.spaceBeforeComma, vscode.ConfigurationTarget.Global)
-        await config.update('spaceInsideParentheses', data.spaceInsideParentheses, vscode.ConfigurationTarget.Global)
-        await config.update('trimTrailingSpaces', data.trimTrailingSpaces, vscode.ConfigurationTarget.Global)
-        await config.update('semicolonAtEnd', data.semicolonAtEnd, vscode.ConfigurationTarget.Global)
-        await config.update('singleLineMaxLength', data.singleLineMaxLength, vscode.ConfigurationTarget.Global)
-        await config.update('ignoreTabSettings', data.ignoreTabSettings, vscode.ConfigurationTarget.Global)
-        await config.update('tabSizeOverride', data.tabSizeOverride, vscode.ConfigurationTarget.Global)
-        await config.update('insertSpacesOverride', data.insertSpacesOverride, vscode.ConfigurationTarget.Global)
-        await config.update('enableEnhancedChecks', data.enableEnhancedChecks, vscode.ConfigurationTarget.Global)
-        await config.update('enableLinter', data.enableLinter, vscode.ConfigurationTarget.Global)
-        await config.update('showErrorLevel', data.showErrorLevel, vscode.ConfigurationTarget.Global)
-        await config.update('showWarningLevel', data.showWarningLevel, vscode.ConfigurationTarget.Global)
-        await config.update('showInfoLevel', data.showInfoLevel, vscode.ConfigurationTarget.Global)
-        await config.update('enableCodeFolding', data.enableCodeFolding, vscode.ConfigurationTarget.Global)
-        await config.update('enableOutlineView', data.enableOutlineView, vscode.ConfigurationTarget.Global)
-        await config.update('enableStatusBar', data.enableStatusBar, vscode.ConfigurationTarget.Global)
-        await config.update('enableParameterHighlight', data.enableParameterHighlight, vscode.ConfigurationTarget.Global)
-        await config.update('enableSnippets', data.enableSnippets, vscode.ConfigurationTarget.Global)
-        await config.update('enableQuickFix', data.enableQuickFix, vscode.ConfigurationTarget.Global)
-        await config.update('enableSmartCommentToggle', data.enableSmartCommentToggle, vscode.ConfigurationTarget.Global)
-        await config.update('headerAuthor', data.headerAuthor, vscode.ConfigurationTarget.Global)
-        await config.update('headerModifier', data.headerModifier, vscode.ConfigurationTarget.Global)
-        await config.update('completion.commentSnippets', data.completionCommentSnippets, vscode.ConfigurationTarget.Global)
-        await config.update('lint.avoid_select_star', { enabled: data.lintAvoidSelectStarEnabled, severity: data.lintAvoidSelectStarSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.explicit_join_type', { enabled: data.lintExplicitJoinTypeEnabled, severity: data.lintExplicitJoinTypeSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.limit_with_order_by', { enabled: data.lintLimitWithOrderByEnabled, severity: data.lintLimitWithOrderBySeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.avoid_column_count_mismatch', { enabled: data.lintAvoidColumnCountMismatchEnabled, severity: data.lintAvoidColumnCountMismatchSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.missing_primary_key', { enabled: data.lintMissingPrimaryKeyEnabled, severity: data.lintMissingPrimaryKeySeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.use_current_timestamp', { enabled: data.lintUseCurrentTimestampEnabled, severity: data.lintUseCurrentTimestampSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.avoid_select_in_insert', { enabled: data.lintAvoidSelectInInsertEnabled, severity: data.lintAvoidSelectInInsertSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.duplicate_column_aliases', { enabled: data.lintDuplicateColumnAliasesEnabled, severity: data.lintDuplicateColumnAliasesSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.uppercase_keywords', { enabled: data.lintUppercaseKeywordsEnabled, severity: data.lintUppercaseKeywordsSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.consistent_aliasing', { enabled: data.lintConsistentAliasingEnabled, severity: data.lintConsistentAliasingSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.use_coalesce_over_isnull', { enabled: data.lintUseCoalesceOverIsnullEnabled, severity: data.lintUseCoalesceOverIsnullSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.explicit_column_aliasing', { enabled: data.lintExplicitColumnAliasingEnabled, severity: data.lintExplicitColumnAliasingSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.avoid_correlated_subqueries', { enabled: data.lintAvoidCorrelatedSubqueriesEnabled, severity: data.lintAvoidCorrelatedSubqueriesSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.long_query_line', { enabled: data.lintLongQueryLineEnabled, severity: data.lintLongQueryLineSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.missing_query_comment', { enabled: data.lintMissingQueryCommentEnabled, severity: data.lintMissingQueryCommentSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.missing_column_comment', { enabled: data.lintMissingColumnCommentEnabled, severity: data.lintMissingColumnCommentSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.commented_out_code', { enabled: data.lintCommentedOutCodeEnabled, severity: data.lintCommentedOutCodeSeverity }, vscode.ConfigurationTarget.Global)
-        await config.update('lint.expired_todo', { enabled: data.lintExpiredTodoEnabled, severity: data.lintExpiredTodoSeverity }, vscode.ConfigurationTarget.Global)
-        
+        const entries: [string, unknown][] = [
+            ['dialect', data.dialect],
+            ['keywordCase', data.keywordCase],
+            ['dataTypeCase', data.dataTypeCase],
+            ['functionCase', data.functionCase],
+            ['identifierCase', data.identifierCase],
+            ['indentStyle', data.indentStyle],
+            ['logicalOperatorNewline', data.logicalOperatorNewline],
+            ['expressionWidth', data.expressionWidth],
+            ['linesBetweenQueries', data.linesBetweenQueries],
+            ['denseOperators', data.denseOperators],
+            ['newlineBeforeSemicolon', data.newlineBeforeSemicolon],
+            ['commaPosition', data.commaPosition],
+            ['alignColumnDefinitions', data.alignColumnDefinitions],
+            ['newlineAfterSelect', data.newlineAfterSelect],
+            ['newlineAfterFrom', data.newlineAfterFrom],
+            ['newlineBeforeWhere', data.newlineBeforeWhere],
+            ['newlineAfterWhere', data.newlineAfterWhere],
+            ['newlineBeforeOrderBy', data.newlineBeforeOrderBy],
+            ['newlineBeforeGroupBy', data.newlineBeforeGroupBy],
+            ['newlineBeforeHaving', data.newlineBeforeHaving],
+            ['newlineBeforeLimit', data.newlineBeforeLimit],
+            ['maxLineLength', data.maxLineLength],
+            ['tabulateAlias', data.tabulateAlias],
+            ['reservedKeywordCase', data.reservedKeywordCase],
+            ['builtinFunctionCase', data.builtinFunctionCase],
+            ['newlineBeforeJoin', data.newlineBeforeJoin],
+            ['newlineAfterComma', data.newlineAfterComma],
+            ['alignWhereClauses', data.alignWhereClauses],
+            ['alignCaseStatements', data.alignCaseStatements],
+            ['breakAfterSelectItem', data.breakAfterSelectItem],
+            ['breakAfterFromItem', data.breakAfterFromItem],
+            ['spaceBeforeComma', data.spaceBeforeComma],
+            ['spaceInsideParentheses', data.spaceInsideParentheses],
+            ['trimTrailingSpaces', data.trimTrailingSpaces],
+            ['semicolonAtEnd', data.semicolonAtEnd],
+            ['singleLineMaxLength', data.singleLineMaxLength],
+            ['ignoreTabSettings', data.ignoreTabSettings],
+            ['tabSizeOverride', data.tabSizeOverride],
+            ['insertSpacesOverride', data.insertSpacesOverride],
+            ['enableEnhancedChecks', data.enableEnhancedChecks],
+            ['enableLinter', data.enableLinter],
+            ['showErrorLevel', data.showErrorLevel],
+            ['showWarningLevel', data.showWarningLevel],
+            ['showInfoLevel', data.showInfoLevel],
+            ['enableCodeFolding', data.enableCodeFolding],
+            ['enableOutlineView', data.enableOutlineView],
+            ['enableStatusBar', data.enableStatusBar],
+            ['enableParameterHighlight', data.enableParameterHighlight],
+            ['enableSnippets', data.enableSnippets],
+            ['enableQuickFix', data.enableQuickFix],
+            ['enableSmartCommentToggle', data.enableSmartCommentToggle],
+        ]
+        for (const [key, value] of entries) {
+            try { await config.update(key, value, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
+        }
+
+        const authorVal = data.headerAuthor as string
+        try { await config.update('headerAuthor', authorVal || undefined, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
+        const modifierVal = data.headerModifier as string
+        try { await config.update('headerModifier', modifierVal || undefined, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
+        try { await config.update('completion.commentSnippets', data.completionCommentSnippets, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
+
+        const lintEntries: [string, unknown][] = [
+            ['lint.avoid_select_star', { enabled: data.lintAvoidSelectStarEnabled, severity: data.lintAvoidSelectStarSeverity }],
+            ['lint.explicit_join_type', { enabled: data.lintExplicitJoinTypeEnabled, severity: data.lintExplicitJoinTypeSeverity }],
+            ['lint.limit_with_order_by', { enabled: data.lintLimitWithOrderByEnabled, severity: data.lintLimitWithOrderBySeverity }],
+            ['lint.avoid_column_count_mismatch', { enabled: data.lintAvoidColumnCountMismatchEnabled, severity: data.lintAvoidColumnCountMismatchSeverity }],
+            ['lint.missing_primary_key', { enabled: data.lintMissingPrimaryKeyEnabled, severity: data.lintMissingPrimaryKeySeverity }],
+            ['lint.use_current_timestamp', { enabled: data.lintUseCurrentTimestampEnabled, severity: data.lintUseCurrentTimestampSeverity }],
+            ['lint.avoid_select_in_insert', { enabled: data.lintAvoidSelectInInsertEnabled, severity: data.lintAvoidSelectInInsertSeverity }],
+            ['lint.duplicate_column_aliases', { enabled: data.lintDuplicateColumnAliasesEnabled, severity: data.lintDuplicateColumnAliasesSeverity }],
+            ['lint.uppercase_keywords', { enabled: data.lintUppercaseKeywordsEnabled, severity: data.lintUppercaseKeywordsSeverity }],
+            ['lint.consistent_aliasing', { enabled: data.lintConsistentAliasingEnabled, severity: data.lintConsistentAliasingSeverity }],
+            ['lint.use_coalesce_over_isnull', { enabled: data.lintUseCoalesceOverIsnullEnabled, severity: data.lintUseCoalesceOverIsnullSeverity }],
+            ['lint.explicit_column_aliasing', { enabled: data.lintExplicitColumnAliasingEnabled, severity: data.lintExplicitColumnAliasingSeverity }],
+            ['lint.avoid_correlated_subqueries', { enabled: data.lintAvoidCorrelatedSubqueriesEnabled, severity: data.lintAvoidCorrelatedSubqueriesSeverity }],
+            ['lint.long_query_line', { enabled: data.lintLongQueryLineEnabled, severity: data.lintLongQueryLineSeverity }],
+            ['lint.missing_query_comment', { enabled: data.lintMissingQueryCommentEnabled, severity: data.lintMissingQueryCommentSeverity }],
+            ['lint.missing_column_comment', { enabled: data.lintMissingColumnCommentEnabled, severity: data.lintMissingColumnCommentSeverity }],
+            ['lint.commented_out_code', { enabled: data.lintCommentedOutCodeEnabled, severity: data.lintCommentedOutCodeSeverity }],
+            ['lint.expired_todo', { enabled: data.lintExpiredTodoEnabled, severity: data.lintExpiredTodoSeverity }],
+        ]
+        for (const [key, value] of lintEntries) {
+            try { await config.update(key, value, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
+        }
+
         vscode.window.showInformationMessage('配置已保存！')
     }
 
