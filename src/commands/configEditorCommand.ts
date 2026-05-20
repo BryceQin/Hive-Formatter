@@ -89,77 +89,77 @@ export class ConfigEditorPanel {
     <title>Hive Formatter - 配置编辑器</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+
         :root {
             --accent: #4a9eff;
-            --accent-dim: rgba(74, 158, 255, 0.12);
+            --accent-dim: rgba(74, 158, 255, 0.10);
             --accent-glow: rgba(74, 158, 255, 0.25);
             --bg: var(--vscode-editor-background, #1e1e2e);
             --surface: var(--vscode-sideBar-background, #252536);
             --surface2: var(--vscode-editorWidget-background, #2a2a3c);
             --text: var(--vscode-editor-foreground, #cdd6f4);
             --text-secondary: var(--vscode-descriptionForeground, #7c7f93);
-            --border: var(--vscode-panel-border, rgba(255,255,255,0.08));
+            --border: var(--vscode-panel-border, rgba(255,255,255,0.06));
             --input-bg: var(--vscode-input-background, #313145);
-            --input-border: var(--vscode-input-border, rgba(255,255,255,0.1));
+            --input-border: var(--vscode-input-border, rgba(255,255,255,0.08));
             --btn-bg: var(--vscode-button-background, #4a9eff);
             --btn-hover: var(--vscode-button-hoverBackground, #5caeff);
-            --btn-secondary-bg: var(--vscode-button-secondaryBackground, rgba(255,255,255,0.08));
-            --btn-secondary-hover: var(--vscode-button-secondaryHoverBackground, rgba(255,255,255,0.12));
+            --btn-secondary-bg: var(--vscode-button-secondaryBackground, rgba(255,255,255,0.06));
+            --btn-secondary-hover: var(--vscode-button-secondaryHoverBackground, rgba(255,255,255,0.10));
             --error-color: #f44747;
             --warning-color: #e2b714;
             --info-color: #4a9eff;
             --success-color: #4ec9b0;
             --radius-sm: 6px;
-            --radius: 10px;
-            --radius-lg: 14px;
-            --shadow: 0 2px 12px rgba(0,0,0,0.15);
-            --shadow-lg: 0 8px 32px rgba(0,0,0,0.25);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow: 0 1px 8px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.20);
             --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         body {
-            font-family: var(--vscode-font-family, -apple-system, sans-serif);
+            font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
             font-size: 13px;
             color: var(--text);
             background: var(--bg);
             line-height: 1.6;
-            padding: 24px 28px;
+            padding: 20px 24px;
             -webkit-font-smoothing: antialiased;
         }
-        
-        .container { max-width: 1260px; margin: 0 auto; }
-        
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
         /* ── Header ── */
         .header {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 28px;
+            gap: 16px;
+            margin-bottom: 20px;
         }
         .header-logo {
-            width: 40px; height: 40px;
+            width: 36px; height: 36px;
             border-radius: var(--radius);
             background: linear-gradient(135deg, var(--accent), #7c3aed);
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
             box-shadow: 0 4px 16px var(--accent-glow);
             flex-shrink: 0;
         }
         .header-info { flex: 1; }
         .header h1 {
-            font-size: 22px; font-weight: 700;
+            font-size: 20px; font-weight: 700;
             background: linear-gradient(135deg, var(--text), var(--accent));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .header-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-        .header-actions { display: flex; gap: 10px; flex-shrink: 0; }
-        
+        .header-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+        .header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
         /* ── Buttons ── */
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 9px 18px; border: none; border-radius: var(--radius-sm);
+            padding: 8px 16px; border: none; border-radius: var(--radius-sm);
             cursor: pointer; font-size: 13px; font-weight: 600;
             transition: all var(--transition); white-space: nowrap;
             font-family: inherit;
@@ -172,175 +172,68 @@ export class ConfigEditorPanel {
         .btn-secondary { background: var(--btn-secondary-bg); color: var(--text); }
         .btn-secondary:hover { background: var(--btn-secondary-hover); }
         .btn-ghost { background: transparent; color: var(--text-secondary); padding: 8px 14px; }
-        .btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-        
+        .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
         /* ── Presets Row ── */
         .presets-bar {
             display: flex; align-items: center; gap: 10px;
-            margin-bottom: 24px; padding: 14px 18px;
+            margin-bottom: 16px; padding: 10px 16px;
             background: var(--surface); border: 1px solid var(--border);
             border-radius: var(--radius);
         }
-        .presets-bar-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; flex-shrink: 0; }
-        .presets-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .presets-bar-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; flex-shrink: 0; }
+        .presets-row { display: flex; gap: 6px; flex-wrap: wrap; }
         .preset-chip {
-            padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+            padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
             background: transparent; color: var(--text-secondary); cursor: pointer;
             font-size: 12px; font-weight: 500; transition: all var(--transition);
             font-family: inherit;
         }
         .preset-chip:hover { border-color: var(--accent); color: var(--text); background: var(--accent-dim); }
         .preset-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); font-weight: 600; }
-        
-        /* ── Main Layout ── */
+
+        /* ── Main Layout: Top-Bottom ── */
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 24px;
-            align-items: start;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
-        
-        /* ── Config Panel ── */
-        .config-section {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); overflow: hidden;
-        }
-        .section-header {
-            display: flex; align-items: center; gap: 10px;
-            padding: 16px 20px; border-bottom: 1px solid var(--border);
-            background: var(--surface2);
-        }
-        .section-header-icon { font-size: 18px; }
-        .section-header h2 { font-size: 15px; font-weight: 700; color: var(--text); }
-        .section-body { padding: 20px; }
-        
-        /* ── Collapsible Config Group ── */
-        .config-group {
-            margin-bottom: 8px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            background: var(--surface2);
-        }
-        .config-group:last-child { margin-bottom: 0; }
-        .cg-header {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 16px; cursor: pointer;
-            transition: background var(--transition);
-            user-select: none;
-        }
-        .cg-header:hover { background: rgba(255,255,255,0.03); }
-        .cg-arrow {
-            width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
-            transition: transform var(--transition); font-size: 10px; color: var(--text-secondary);
-        }
-        .cg-arrow.open { transform: rotate(90deg); }
-        .cg-icon { font-size: 15px; flex-shrink: 0; }
-        .cg-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
-        .cg-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-dim); color: var(--accent); font-weight: 600; }
-        .cg-body { padding: 0 16px 14px; display: none; }
-        .cg-body.open { display: block; }
-        
-        /* ── Config Items ── */
-        .config-item { margin-bottom: 14px; }
-        .config-item:last-child { margin-bottom: 0; }
-        .ci-label {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        .ci-label-text { font-size: 12px; font-weight: 600; color: var(--text); }
-        .ci-label-hint { font-size: 11px; color: var(--text-secondary); }
-        
-        /* ── Select & Input ── */
-        .config-select, .config-input {
-            width: 100%; padding: 9px 12px;
-            background: var(--input-bg); border: 1px solid var(--input-border);
-            border-radius: var(--radius-sm); color: var(--text);
-            font-size: 13px; font-family: inherit;
-            transition: border-color var(--transition);
-            -webkit-appearance: none; appearance: none;
-        }
-        .config-select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237c7f93' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 12px center;
-            padding-right: 32px; cursor: pointer;
-        }
-        .config-input:focus, .config-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
-        .config-input:hover, .config-select:hover { border-color: rgba(255,255,255,0.2); }
-        .ci-input-row { display: flex; gap: 8px; }
-        .ci-input-row .config-select { flex: 1; }
-        
-        /* ── Toggle Switch ── */
-        .toggle-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 9px 0;
-        }
-        .toggle-label { font-size: 12px; font-weight: 600; }
-        .toggle {
-            position: relative; width: 40px; height: 22px; flex-shrink: 0;
-        }
-        .toggle input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider {
-            position: absolute; inset: 0; border-radius: 22px;
-            background: rgba(255,255,255,0.12); cursor: pointer;
-            transition: all var(--transition);
-        }
-        .toggle-slider::before {
-            content: ""; position: absolute; top: 3px; left: 3px;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: #fff; transition: all var(--transition);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .toggle input:checked + .toggle-slider { background: var(--accent); }
-        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
-        .toggle input:focus-visible + .toggle-slider { box-shadow: 0 0 0 2px var(--accent-glow); }
-        
-        /* ── Severity Badge ── */
-        .severity-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .severity-badge.error { background: rgba(244,71,71,0.15); color: var(--error-color); }
-        .severity-badge.warning { background: rgba(226,183,20,0.15); color: var(--warning-color); }
-        .severity-badge.information { background: rgba(74,158,255,0.15); color: var(--info-color); }
-        .severity-dot { width: 6px; height: 6px; border-radius: 50%; }
-        .severity-dot.error { background: var(--error-color); }
-        .severity-dot.warning { background: var(--warning-color); }
-        .severity-dot.information { background: var(--info-color); }
-        
-        /* ── Lint Rule Row ── */
-        .lint-rule {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-        .lint-rule:last-child { border-bottom: none; }
-        .lint-rule-name { font-size: 12px; font-weight: 500; flex: 1; }
-        .lint-rule-severity { width: 100px; flex-shrink: 0; }
-        .lint-rule-toggle { flex-shrink: 0; }
-        
-        /* ── Preview Panel ── */
+
+        /* ── Preview Panel (Top) ── */
         .preview-panel {
-            position: sticky; top: 20px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); overflow: hidden;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            overflow: hidden;
         }
-        .preview-body { padding: 20px; }
+        .preview-body {
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            min-height: 200px;
+            max-height: 420px;
+        }
+        .preview-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .preview-col-label {
+            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.6px;
+        }
         .preview-editor {
-            width: 100%; min-height: 140px; padding: 14px;
+            flex: 1; width: 100%; min-height: 100px; padding: 12px;
             background: var(--input-bg); border: 1px solid var(--input-border);
             border-radius: var(--radius); color: var(--text);
             font-family: var(--vscode-editor-font-family, 'SF Mono', 'Fira Code', monospace);
-            font-size: 13px; line-height: 1.5; resize: vertical;
+            font-size: 12.5px; line-height: 1.5; resize: none;
             transition: border-color var(--transition);
         }
         .preview-editor:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
-        .preview-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .preview-actions { display: flex; gap: 8px; }
         .preview-result {
-            margin-top: 12px; padding: 16px; min-height: 120px;
+            flex: 1; padding: 12px; min-height: 100px;
             background: var(--bg); border: 1px solid var(--border);
             border-radius: var(--radius); font-family: var(--vscode-editor-font-family, 'SF Mono', 'Fira Code', monospace);
-            font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-x: auto;
+            font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; overflow-x: auto;
             transition: all var(--transition);
         }
         .preview-result.empty {
@@ -349,24 +242,168 @@ export class ConfigEditorPanel {
             font-size: 13px;
         }
         .preview-result.success { border-color: rgba(78,201,176,0.3); }
-        
+
+        /* ── Resize Handle ── */
+        .resize-handle {
+            height: 6px;
+            background: var(--surface2);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: ns-resize;
+            display: flex; align-items: center; justify-content: center;
+            transition: background var(--transition);
+        }
+        .resize-handle:hover { background: var(--accent-dim); }
+        .resize-handle::after {
+            content: '';
+            width: 40px; height: 3px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.15);
+        }
+        .resize-handle:hover::after { background: var(--accent); }
+
+        /* ── Config Panel (Bottom) ── */
+        .config-section {
+            background: var(--surface); border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            overflow: hidden;
+        }
+        .section-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 20px; border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+        .section-header-icon { font-size: 16px; }
+        .section-header h2 { font-size: 14px; font-weight: 700; color: var(--text); }
+        .section-body {
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+
+        /* ── Collapsible Config Group ── */
+        .config-group {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--surface2);
+        }
+        .cg-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px; cursor: pointer;
+            transition: background var(--transition);
+            user-select: none;
+        }
+        .cg-header:hover { background: rgba(255,255,255,0.02); }
+        .cg-arrow {
+            width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+            transition: transform var(--transition); font-size: 9px; color: var(--text-secondary);
+        }
+        .cg-arrow.open { transform: rotate(90deg); }
+        .cg-icon { font-size: 14px; flex-shrink: 0; }
+        .cg-title { font-size: 12.5px; font-weight: 600; color: var(--text); flex: 1; }
+        .cg-badge { font-size: 10px; padding: 1px 7px; border-radius: 10px; background: var(--accent-dim); color: var(--accent); font-weight: 600; }
+        .cg-body { padding: 0 14px 12px; display: none; }
+        .cg-body.open { display: block; }
+
+        /* ── Config Items ── */
+        .config-item { margin-bottom: 10px; }
+        .config-item:last-child { margin-bottom: 0; }
+        .ci-label {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .ci-label-text { font-size: 12px; font-weight: 600; color: var(--text); }
+        .ci-label-hint { font-size: 11px; color: var(--text-secondary); }
+
+        /* ── Select & Input ── */
+        .config-select, .config-input {
+            width: 100%; padding: 7px 10px;
+            background: var(--input-bg); border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-size: 12.5px; font-family: inherit;
+            transition: border-color var(--transition);
+            -webkit-appearance: none; appearance: none;
+        }
+        .config-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237c7f93' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+            padding-right: 28px; cursor: pointer;
+        }
+        .config-input:focus, .config-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+        .config-input:hover, .config-select:hover { border-color: rgba(255,255,255,0.15); }
+        .ci-input-row { display: flex; gap: 8px; }
+        .ci-input-row .config-select { flex: 1; }
+
+        /* ── Toggle Switch ── */
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 0;
+        }
+        .toggle-label { font-size: 12px; font-weight: 500; }
+        .toggle {
+            position: relative; width: 36px; height: 20px; flex-shrink: 0;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0; border-radius: 20px;
+            background: rgba(255,255,255,0.10); cursor: pointer;
+            transition: all var(--transition);
+        }
+        .toggle-slider::before {
+            content: ""; position: absolute; top: 2px; left: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; transition: all var(--transition);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .toggle input:checked + .toggle-slider { background: var(--accent); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+        .toggle input:focus-visible + .toggle-slider { box-shadow: 0 0 0 2px var(--accent-glow); }
+
+        /* ── Severity Badge ── */
+        .severity-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .severity-badge.error { background: rgba(244,71,71,0.12); color: var(--error-color); }
+        .severity-badge.warning { background: rgba(226,183,20,0.12); color: var(--warning-color); }
+        .severity-badge.information { background: rgba(74,158,255,0.12); color: var(--info-color); }
+        .severity-dot { width: 5px; height: 5px; border-radius: 50%; }
+        .severity-dot.error { background: var(--error-color); }
+        .severity-dot.warning { background: var(--warning-color); }
+        .severity-dot.information { background: var(--info-color); }
+
+        /* ── Lint Rule Row ── */
+        .lint-rule {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .lint-rule:last-child { border-bottom: none; }
+        .lint-rule-name { font-size: 12px; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lint-rule-severity { width: 88px; flex-shrink: 0; }
+        .lint-rule-toggle { flex-shrink: 0; }
+
         /* ── Toast / Status ── */
         .toast {
             position: fixed; top: 20px; right: 20px; z-index: 999;
-            padding: 12px 20px; border-radius: var(--radius);
+            padding: 10px 18px; border-radius: var(--radius);
             font-size: 13px; font-weight: 600; pointer-events: none;
             opacity: 0; transform: translateY(-10px); transition: all 0.3s;
             box-shadow: var(--shadow-lg);
         }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background: var(--success-color); color: #000; }
-        
+
         /* ── Scrollbar ── */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-        
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
         /* ── Empty State ── */
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
         .empty-state-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
@@ -397,6 +434,26 @@ export class ConfigEditorPanel {
         </div>
         
         <div class="main-content">
+            <div class="preview-panel">
+                <div class="section-header">
+                    <span class="section-header-icon">👁️</span>
+                    <h2>实时预览</h2>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-col">
+                        <div class="preview-col-label">输入 SQL</div>
+                        <textarea class="preview-editor" id="previewInput" placeholder="输入 SQL 进行预览...">select id,name,email from users where age>18 and status='active' order by created_at desc limit 10;</textarea>
+                        <div class="preview-actions">
+                            <button class="btn btn-primary" style="flex:1;" onclick="previewFormat()">▶ 格式化预览</button>
+                        </div>
+                    </div>
+                    <div class="preview-col">
+                        <div class="preview-col-label">格式化结果</div>
+                        <div class="preview-result empty" id="previewResult">点击「格式化预览」查看效果</div>
+                    </div>
+                </div>
+            </div>
+            <div class="resize-handle" id="resizeHandle"></div>
             <div class="config-section">
                 <div class="section-header">
                     <span class="section-header-icon">⚙️</span>
@@ -762,20 +819,6 @@ export class ConfigEditorPanel {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="preview-panel">
-                <div class="section-header">
-                    <span class="section-header-icon">👁️</span>
-                    <h2>实时预览</h2>
-                </div>
-                <div class="preview-body">
-                    <textarea class="preview-editor" id="previewInput" placeholder="输入 SQL 进行预览...">select id,name,email from users where age>18 and status='active' order by created_at desc limit 10;</textarea>
-                    <div class="preview-actions">
-                        <button class="btn btn-primary" style="flex:1;" onclick="previewFormat()">▶ 格式化预览</button>
-                    </div>
-                    <div class="preview-result empty" id="previewResult">点击「格式化预览」查看效果</div>
                 </div>
             </div>
         </div>
@@ -1277,7 +1320,38 @@ export class ConfigEditorPanel {
         }
         
         document.getElementById('ignoreTabSettings').addEventListener('change', updateTabOverrideGroup);
-        
+
+        const resizeHandle = document.getElementById('resizeHandle');
+        const previewBody = document.querySelector('.preview-body');
+        let isResizing = false;
+        let startY = 0;
+        let startHeight = 0;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            startY = e.clientY;
+            startHeight = previewBody.offsetHeight;
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const delta = e.clientY - startY;
+            const newHeight = Math.max(160, Math.min(600, startHeight + delta));
+            previewBody.style.maxHeight = newHeight + 'px';
+            previewBody.style.minHeight = newHeight + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
         const vscode = acquireVsCodeApi();
         vscode.postMessage({ command: 'getCurrentConfig' });
     </script>
