@@ -12,6 +12,7 @@ import { SqlFoldingRangeProvider } from "./providers/SqlFoldingRangeProvider"
 import { SqlOutlineProvider } from "./providers/SqlOutlineProvider"
 import { SqlParameterHighlighter, SqlParameterReplaceCommand } from "./providers/SqlParameterHightlighter"
 import { SqlCompletionProvider, } from "./completion"
+import { SqlHoverProvider } from "./providers/SqlHoverProvider"
 import { initI18n } from "./i18n"
 
 let diagnosticsProvider: SqlDiagnosticsProvider
@@ -165,6 +166,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (completionProvider) {
         context.subscriptions.push(completionProvider)
+    }
+
+    try {
+        const hoverProvider = new SqlHoverProvider()
+        const sqlLanguages = Object.keys(sqlDialects)
+        context.subscriptions.push(
+            ...sqlLanguages.map(lang =>
+                vscode.languages.registerHoverProvider(
+                    { language: lang },
+                    hoverProvider
+                )
+            )
+        )
+    } catch (e) {
+        console.error('Hive Formatter: failed to register HoverProvider', e)
     }
 
     if (statusBarProvider) {

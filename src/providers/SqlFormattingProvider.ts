@@ -31,9 +31,7 @@ export class SqlFormattingProvider
     }
 
     private getAllText(document: vscode.TextDocument) {
-        return [...new Array(document.lineCount)]
-            .map((_, i) => document.lineAt(i).text)
-            .join("\n")
+        return document.getText()
     }
 
     private fullDocumentRange(document: vscode.TextDocument): vscode.Range {

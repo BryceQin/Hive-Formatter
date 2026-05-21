@@ -49,6 +49,7 @@ const SqlFoldingRangeProvider_1 = require("./providers/SqlFoldingRangeProvider")
 const SqlOutlineProvider_1 = require("./providers/SqlOutlineProvider");
 const SqlParameterHightlighter_1 = require("./providers/SqlParameterHightlighter");
 const completion_1 = require("./completion");
+const SqlHoverProvider_1 = require("./providers/SqlHoverProvider");
 const i18n_1 = require("./i18n");
 let diagnosticsProvider;
 let statusBarProvider;
@@ -138,6 +139,14 @@ function activate(context) {
     }
     if (completionProvider) {
         context.subscriptions.push(completionProvider);
+    }
+    try {
+        const hoverProvider = new SqlHoverProvider_1.SqlHoverProvider();
+        const sqlLanguages = Object.keys(sqlDialects_1.sqlDialects);
+        context.subscriptions.push(...sqlLanguages.map(lang => vscode.languages.registerHoverProvider({ language: lang }, hoverProvider)));
+    }
+    catch (e) {
+        console.error('Hive Formatter: failed to register HoverProvider', e);
     }
     if (statusBarProvider) {
         context.subscriptions.push(statusBarProvider);

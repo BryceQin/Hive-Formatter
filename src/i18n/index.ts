@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import messagesEn from './messages.en.json';
+import messagesZh from './messages.zh.json';
 
 type Language = 'zh' | 'en';
 type MessageKey = string;
@@ -6,18 +8,26 @@ type MessageKey = string;
 let currentLang: Language = 'zh';
 let messages: Record<MessageKey, string> = {};
 
+const messageBundles: Record<Language, Record<MessageKey, string>> = {
+    en: messagesEn,
+    zh: messagesZh,
+};
+
+const validLanguages: Language[] = ['zh', 'en'];
+
 export function initI18n(): void {
     const config = vscode.workspace.getConfiguration('Hive-Formatter');
     const userLang = config.get<string>('displayLanguage', 'auto');
 
     if (userLang === 'auto') {
-        currentLang = vscode.env.language === 'zh-cn' ? 'zh' : 'en';
-    } else {
+        currentLang = vscode.env.language.startsWith('zh') ? 'zh' : 'en';
+    } else if (validLanguages.includes(userLang as Language)) {
         currentLang = userLang as Language;
+    } else {
+        currentLang = 'en';
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    messages = require(`./messages.${currentLang}.json`);
+    messages = messageBundles[currentLang];
 }
 
 export function t(key: MessageKey, ...args: string[]): string {
@@ -27,7 +37,7 @@ export function t(key: MessageKey, ...args: string[]): string {
         return key;
     }
     args.forEach((arg, i) => {
-        template = template.replace(`{${i}}`, arg);
+        template = template.replaceAll(`{${i}}`, String(arg));
     });
     return template;
 }

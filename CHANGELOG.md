@@ -1,5 +1,19 @@
 # 更新日志
 
+## 0.21.0
+- 修复 i18n t() 函数 replace 只替换第一个匹配项（改为 replaceAll）
+- 修复 i18n 语言检测只匹配 zh-cn 不覆盖 zh-CN/zh-Hans 等
+- 修复 i18n 动态 require 改为静态 import（兼容打包工具）
+- 修复 messages.en.json 中 lexer.parseError 参数索引完全错位
+- 修复 messages.en/zh.json 中 4 个消息模板占位符 {0} 重复使用
+- 修复 hive.keywords.ts UTC_TMESTAMP 拼写错误（之前修复未生效）
+- 修复 hive.keywords.ts STRING/TINYINT 仍在 keywords 中重复
+- 修复 hive.keywords.ts TIMESTAMPTZ 非 Hive 关键字未删除
+- 修复 commentCompletion.ts FROM/JOIN/INSERT/CREATE 正则缺少 \b 词边界
+- 修复 formatSelectionCommand.ts tabSize/insertSpaces 类型不安全强制转换
+- 修复 converterCommands.ts 转换器调用缺少 try-catch 错误处理
+- 优化 SqlFormattingProvider.ts 使用 document.getText() 替代逐行拼接
+
 ## 0.20.0
 - 修复 UTC_TMESTAMP 拼写错误（应为 UTC_TIMESTAMP），删除非标准的 UTCTIMESTAMP
 - 修复 Hive 格式化器缺少 LATERAL VIEW 子句（导致 LATERAL VIEW 格式化不正确）
