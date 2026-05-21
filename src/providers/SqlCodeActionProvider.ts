@@ -197,11 +197,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         const text = document.getText(diagnostic.range)
         let newText = text
 
-        if (text.includes('= NULL')) {
-            newText = text.replace('= NULL', 'IS NULL')
-        } else if (text.includes('= null')) {
-            newText = text.replace('= null', 'IS NULL')
-        } else if (text.includes('!= NULL')) {
+        if (text.includes('!= NULL')) {
             newText = text.replace('!= NULL', 'IS NOT NULL')
         } else if (text.includes('!= null')) {
             newText = text.replace('!= null', 'IS NOT NULL')
@@ -209,6 +205,10 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
             newText = text.replace('<> NULL', 'IS NOT NULL')
         } else if (text.includes('<> null')) {
             newText = text.replace('<> null', 'IS NOT NULL')
+        } else if (text.includes('= NULL')) {
+            newText = text.replace('= NULL', 'IS NULL')
+        } else if (text.includes('= null')) {
+            newText = text.replace('= null', 'IS NULL')
         }
 
         action.edit = new vscode.WorkspaceEdit()
@@ -310,7 +310,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
             action.edit = new vscode.WorkspaceEdit()
             action.edit.insert(
                 document.uri,
-                document.positionAt(insertPos.character),
+                insertPos,
                 ' (col1, col2, col3)'
             )
         }

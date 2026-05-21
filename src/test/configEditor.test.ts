@@ -21,7 +21,7 @@ suite('ConfigEditorPanel 测试', () => {
             
             const hasWebviewPanel = vscode.window.tabGroups.all.some(group =>
                 group.tabs.some(tab => {
-                    const input = tab.input as any
+                    const input = tab.input as { viewType?: string }
                     return input && input.viewType === 'hiveFormatterConfig'
                 })
             )
@@ -226,7 +226,9 @@ suite('回归测试 - 现有功能完整性', () => {
             
             await new Promise(resolve => setTimeout(resolve, 2000))
             
-            assert.ok(true, '诊断系统处理有效SQL时不应崩溃')
+            const diags = vscode.languages.getDiagnostics(document.uri)
+            const hasErrors = diags.some(d => d.severity === vscode.DiagnosticSeverity.Error)
+            assert.ok(!hasErrors, '有效SQL不应有错误级别的诊断')
             
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor')
         })

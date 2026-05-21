@@ -2,7 +2,7 @@
     "name": "hive-formatter",
     "displayName": "Hive Formatter",
     "description": "一个用于 Hive、MySQL、SparkSQL 格式化的 VSCode 插件，支持 SQL IntelliSense 智能补全、语法检查和 MySQL/HiveSQL 互相转换",
-    "version": "0.18.13",
+    "version": "0.19.0",
     "publisher": "bryce-qin",
     "contributors": [
         "TalDu"
@@ -36,41 +36,94 @@
     "activationEvents": [
         "onStartupFinished",
         "onLanguage:sql",
-        "onLanguage:hive"
+        "onLanguage:hive",
+        "onLanguage:mysql",
+        "onLanguage:spark",
+        "onLanguage:postgresql",
+        "onLanguage:oracle",
+        "onLanguage:plsql",
+        "onLanguage:bigquery",
+        "onLanguage:snowflake",
+        "onLanguage:presto",
+        "onLanguage:sqlite"
     ],
     "main": "./out/extension.js",
     "browser": "./out/extension.js",
     "contributes": {
         "snippets": [
-            {
-                "language": "sql",
-                "path": "./snippets/sql.json"
-            },
-            {
-                "language": "hive",
-                "path": "./snippets/sql.json"
-            }
+            { "language": "sql", "path": "./snippets/common.json" },
+            { "language": "sql", "path": "./snippets/sql.json" },
+            { "language": "hive", "path": "./snippets/common.json" },
+            { "language": "hive", "path": "./snippets/hive.json" },
+            { "language": "mysql", "path": "./snippets/common.json" },
+            { "language": "mysql", "path": "./snippets/mysql.json" },
+            { "language": "spark", "path": "./snippets/common.json" },
+            { "language": "spark", "path": "./snippets/spark.json" },
+            { "language": "postgresql", "path": "./snippets/common.json" },
+            { "language": "postgresql", "path": "./snippets/postgresql.json" },
+            { "language": "oracle", "path": "./snippets/common.json" },
+            { "language": "oracle", "path": "./snippets/oracle.json" },
+            { "language": "plsql", "path": "./snippets/common.json" },
+            { "language": "plsql", "path": "./snippets/oracle.json" },
+            { "language": "bigquery", "path": "./snippets/common.json" },
+            { "language": "bigquery", "path": "./snippets/bigquery.json" },
+            { "language": "snowflake", "path": "./snippets/common.json" },
+            { "language": "snowflake", "path": "./snippets/snowflake.json" },
+            { "language": "presto", "path": "./snippets/common.json" },
+            { "language": "presto", "path": "./snippets/presto.json" },
+            { "language": "sqlite", "path": "./snippets/common.json" },
+            { "language": "sqlite", "path": "./snippets/sqlite.json" }
         ],
         "languages": [
             {
                 "id": "sql",
-                "aliases": [
-                    "SQL",
-                    "sql"
-                ],
-                "extensions": [
-                    ".sql"
-                ]
+                "aliases": ["SQL"],
+                "extensions": [".sql"]
             },
             {
                 "id": "hive",
-                "aliases": [
-                    "Hive",
-                    "hive"
-                ],
-                "extensions": [
-                    ".hql"
-                ]
+                "aliases": ["Hive", "hive-sql"],
+                "extensions": [".hql"]
+            },
+            {
+                "id": "mysql",
+                "aliases": ["MySQL"],
+                "extensions": [".mysql"]
+            },
+            {
+                "id": "spark",
+                "aliases": ["SparkSQL", "spark"],
+                "extensions": [".sparksql"]
+            },
+            {
+                "id": "postgresql",
+                "aliases": ["PostgreSQL", "postgres"],
+                "extensions": [".psql", ".pgsql"]
+            },
+            {
+                "id": "plsql",
+                "aliases": ["Oracle", "PL/SQL"],
+                "extensions": [".pls", ".plsql"]
+            },
+            {
+                "id": "bigquery",
+                "aliases": ["BigQuery"],
+                "extensions": [".bqsql"]
+            },
+            {
+                "id": "snowflake",
+                "aliases": ["Snowflake"],
+                "extensions": [".snowsql"]
+            },
+            {
+                "id": "presto",
+                "aliases": ["Presto", "Trino"],
+                "extensions": [".prestosql"]
+            },
+            {
+                "id": "sqlite",
+                "aliases": ["SQLite"],
+                "extensions": [".sqlite", ".sqlt"]
             }
         ],
         "commands": [
@@ -132,22 +185,36 @@
             "title": "Hive Formatter",
             "properties": {
                 "Hive-Formatter.dialect": {
-                    "type": "string",
-                    "enum": [
-                        "hive",
-                        "mysql",
-                        "spark",
-                        "sql"
-                    ],
-                    "enumDescriptions": [
-                        "Apache Hive",
-                        "MySQL",
-                        "Spark",
-                        "Basic SQL - generally not recommended."
-                    ],
-                    "default": "hive",
-                    "markdownDescription": "选择使用的SQL方言。强烈建议选择否则可能出错。"
-                },
+                "type": "string",
+                "enum": [
+                    "auto-detect",
+                    "hive",
+                    "mysql",
+                    "spark",
+                    "sql",
+                    "postgresql",
+                    "oracle",
+                    "bigquery",
+                    "snowflake",
+                    "presto",
+                    "sqlite"
+                ],
+                "enumDescriptions": [
+                    "自动检测",
+                    "Apache Hive",
+                    "MySQL",
+                    "Spark",
+                    "Basic SQL - generally not recommended.",
+                    "PostgreSQL",
+                    "Oracle",
+                    "BigQuery",
+                    "Snowflake",
+                    "Presto/Trino",
+                    "SQLite"
+                ],
+                "default": "hive",
+                "markdownDescription": "选择使用的SQL方言。强烈建议选择否则可能出错。"
+            },
                 "Hive-Formatter.ignoreTabSettings": {
                     "type": "boolean",
                     "default": false,

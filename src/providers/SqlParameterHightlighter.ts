@@ -3,8 +3,8 @@ import { sqlDialects } from '../core/sqlDialects'
 
 export class SqlParameterHighlighter {
     private decorationType: vscode.TextEditorDecorationType
-    private disposable: vscode.Disposable
-    
+    private disposables: vscode.Disposable[] = []
+
     constructor() {
         this.decorationType = vscode.window.createTextEditorDecorationType({
             backgroundColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
@@ -13,30 +13,26 @@ export class SqlParameterHighlighter {
             overviewRulerColor: new vscode.ThemeColor('editor.findMatchHighlightBackground'),
             overviewRulerLane: vscode.OverviewRulerLane.Right
         })
-        
-        // 监听活动编辑器变化
-        this.disposable = vscode.window.onDidChangeActiveTextEditor(editor => {
-            if (editor && this.isSqlDocument(editor.document)) {
-                this.updateDecorations(editor)
-            }
-        })
-        
-        // 监听文档变化
-        vscode.workspace.onDidChangeTextDocument(event => {
-            const editor = vscode.window.activeTextEditor
-            if (editor && editor.document === event.document && this.isSqlDocument(event.document)) {
-                this.updateDecorations(editor)
-            }
-        })
-        
-        // 监听光标位置变化
-        vscode.window.onDidChangeTextEditorSelection(event => {
-            if (this.isSqlDocument(event.textEditor.document)) {
-                this.updateDecorations(event.textEditor)
-            }
-        })
-        
-        // 初始更新
+
+        this.disposables.push(
+            vscode.window.onDidChangeActiveTextEditor(editor => {
+                if (editor && this.isSqlDocument(editor.document)) {
+                    this.updateDecorations(editor)
+                }
+            }),
+            vscode.workspace.onDidChangeTextDocument(event => {
+                const editor = vscode.window.activeTextEditor
+                if (editor && editor.document === event.document && this.isSqlDocument(event.document)) {
+                    this.updateDecorations(editor)
+                }
+            }),
+            vscode.window.onDidChangeTextEditorSelection(event => {
+                if (this.isSqlDocument(event.textEditor.document)) {
+                    this.updateDecorations(event.textEditor)
+                }
+            })
+        )
+
         if (vscode.window.activeTextEditor) {
             this.updateDecorations(vscode.window.activeTextEditor)
         }
@@ -96,10 +92,10 @@ export class SqlParameterHighlighter {
     
     private isParameter(word: string): boolean {
         // 支持常见的参数格式
-        const startsWithValidPrefix = word.startsWith('$') || 
-                                     word.startsWith('@') || 
-                                     word.startsWith(':') ||
-                                     word.startsWith(':?')
+        const startsWithValidPrefix = word.startsWith('$') ||
+                                     word.startsWith('@') ||
+                                     word.startsWith(':?') ||
+                                     word.startsWith(':')
         return startsWithValidPrefix && /^[$:?@][a-zA-Z0-9_]+$/.test(word)
     }
     
@@ -111,7 +107,7 @@ export class SqlParameterHighlighter {
     
     public dispose(): void {
         this.decorationType.dispose()
-        this.disposable.dispose()
+        for (const d of this.disposables) d.dispose()
     }
 }
 
@@ -138,10 +134,10 @@ export class SqlParameterReplaceCommand {
                 const wordRange = document.getWordRangeAtPosition(pos, /[$:?@][a-zA-Z0-9_]+|:[a-zA-Z0-9_]+/)
                 if (wordRange) {
                     const word = document.getText(wordRange)
-                const startsWithValidPrefix = word.startsWith('$') || 
-                                             word.startsWith('@') || 
-                                             word.startsWith(':') ||
-                                             word.startsWith(':?')
+                const startsWithValidPrefix = word.startsWith('$') ||
+                                             word.startsWith('@') ||
+                                             word.startsWith(':?') ||
+                                             word.startsWith(':')
                 if (startsWithValidPrefix && /^[$:?@][a-zA-Z0-9_]+$/.test(word)) {
                         currentParameter = word
                         break

@@ -14,6 +14,8 @@ export class SqlDiagnosticsProvider {
     private linter: SqlLinter
     private configCache: Record<string, boolean> = {}
 
+    private configChangeListener: vscode.Disposable
+
     constructor() {
         this.diagnosticCollection =
             vscode.languages.createDiagnosticCollection("hive-formatter")
@@ -21,12 +23,10 @@ export class SqlDiagnosticsProvider {
         this.linter = new SqlLinter()
         this.loadConfig()
         
-        // 监听配置变化
-        vscode.workspace.onDidChangeConfiguration((e) => {
+        this.configChangeListener = vscode.workspace.onDidChangeConfiguration((e) => {
             if (e.affectsConfiguration('Hive-Formatter')) {
                 this.loadConfig()
-                this.linter = new SqlLinter() // 重新加载配置
-                // 重新检查所有打开的文档
+                this.linter = new SqlLinter()
                 vscode.workspace.textDocuments.forEach((doc) => {
                     if (this.isSqlDocument(doc)) {
                         this.provideDiagnostics(doc)
@@ -150,9 +150,18 @@ export class SqlDiagnosticsProvider {
             const selectEnd = selectStart + 6;
             
             const afterSelect = text.substring(selectEnd);
-            const fromMatch = /\bfrom\b/i.exec(afterSelect);
-            if (fromMatch) {
-                const fromStartRelative = fromMatch.index;
+            let depth = 0
+            let fromStartRelative = -1
+            for (let i = 0; i < afterSelect.length; i++) {
+                if (afterSelect[i] === '(') depth++
+                else if (afterSelect[i] === ')') depth--
+                else if (depth === 0 && afterSelect.substring(i, i + 4).match(/\bfrom\b/i)) {
+                    fromStartRelative = i
+                    break
+                }
+            }
+            
+            if (fromStartRelative !== -1) {
                 const betweenText = afterSelect.substring(0, fromStartRelative).trim();
                 
                 if (betweenText === '') {
@@ -180,8 +189,8 @@ export class SqlDiagnosticsProvider {
             const fromEnd = fromStart + 4;
             
             const afterFrom = text.substring(fromEnd);
-            const semicolonMatch = /[;$]/i.exec(afterFrom);
-            const endPosition = semicolonMatch ? semicolonMatch.index : afterFrom.length;
+            const clauseEndMatch = /(?:;|\bwhere\b|\bgroup\b|\bhaving\b|\border\b|\blimit\b|\bjoin\b|\binner\b|\bleft\b|\bright\b|\bfull\b|\bcross\b|\bnatural\b|\bunion\b|\bon\b)/i.exec(afterFrom);
+            const endPosition = clauseEndMatch ? clauseEndMatch.index : afterFrom.length;
             const afterFromText = afterFrom.substring(0, endPosition).trim();
             
             if (afterFromText === '') {
@@ -201,10 +210,43 @@ export class SqlDiagnosticsProvider {
 
     private checkMismatchedParentheses(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const openParens: number[] = []
+        let inString = false
+        let stringChar = ''
+        let inLineComment = false
+        let inBlockComment = false
+        
         for (let i = 0; i < text.length; i++) {
-            if (text[i] === '(') {
+            const char = text[i]
+            const nextChar = i + 1 < text.length ? text[i + 1] : ''
+            
+            if (inLineComment) {
+                if (char === '\n') inLineComment = false
+                continue
+            }
+            if (inBlockComment) {
+                if (char === '*' && nextChar === '/') { inBlockComment = false; i++ }
+                continue
+            }
+            if (inString) {
+                if (char === stringChar) {
+                    if (nextChar === stringChar) { i++ }
+                    else { inString = false }
+                }
+                continue
+            }
+            
+            if (char === "'" || char === '"') {
+                inString = true
+                stringChar = char
+            } else if (char === '-' && nextChar === '-') {
+                inLineComment = true
+                i++
+            } else if (char === '/' && nextChar === '*') {
+                inBlockComment = true
+                i++
+            } else if (char === '(') {
                 openParens.push(i)
-            } else if (text[i] === ')') {
+            } else if (char === ')') {
                 if (openParens.length === 0) {
                     const lineCol = lineColFromIndex(text, i)
                     const lineNum = lineCol.line
@@ -239,15 +281,45 @@ export class SqlDiagnosticsProvider {
         let inString = false
         let stringStartPos = -1
         let currentQuote = ''
+        let inLineComment = false
+        let inBlockComment = false
         
         for (let i = 0; i < text.length; i++) {
-            if (!inString && (text[i] === "'" || text[i] === '"')) {
-                inString = true
-                stringStartPos = i
-                currentQuote = text[i]
-            } else if (inString && text[i] === currentQuote) {
-                inString = false
-                stringStartPos = -1
+            const char = text[i]
+            const nextChar = i + 1 < text.length ? text[i + 1] : ''
+            
+            if (inLineComment) {
+                if (char === '\n') inLineComment = false
+                continue
+            }
+            if (inBlockComment) {
+                if (char === '*' && nextChar === '/') { inBlockComment = false; i++ }
+                continue
+            }
+            
+            if (inString) {
+                if (char === currentQuote) {
+                    if (nextChar === currentQuote) {
+                        i++
+                    } else {
+                        inString = false
+                        stringStartPos = -1
+                    }
+                } else if (char === '\\' && nextChar) {
+                    i++
+                }
+            } else {
+                if (char === "'" || char === '"') {
+                    inString = true
+                    stringStartPos = i
+                    currentQuote = char
+                } else if (char === '-' && nextChar === '-') {
+                    inLineComment = true
+                    i++
+                } else if (char === '/' && nextChar === '*') {
+                    inBlockComment = true
+                    i++
+                }
             }
         }
         
@@ -429,6 +501,7 @@ export class SqlDiagnosticsProvider {
     }
 
     public dispose(): void {
+        this.configChangeListener.dispose()
         this.diagnosticCollection.dispose()
     }
 }

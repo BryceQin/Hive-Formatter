@@ -49,6 +49,12 @@ const dialectNameMap = {
     mysql: "mysql",
     spark: "spark",
     sql: "sql",
+    postgresql: "postgresql",
+    oracle: "oracle",
+    bigquery: "bigquery",
+    snowflake: "snowflake",
+    presto: "presto",
+    sqlite: "sqlite",
 };
 exports.supportedDialects = Object.keys(dialectNameMap);
 /**

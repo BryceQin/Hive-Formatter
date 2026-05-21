@@ -27,25 +27,28 @@ export class EnhancedSqlChecker {
 
     // 1. 检查 HAVING 没有 GROUP BY
     private checkHavingWithoutGroupBy(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bhaving\b(?!.*\bgroup\s+by\b)/gi
+        const pattern = /\bhaving\b/gi
         let match
         while ((match = pattern.exec(text)) !== null) {
-            const lineCol = lineColFromIndex(text, match.index)
-            const lineNum = lineCol.line
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                `【第 ${lineNum} 行】代码质量建议：HAVING 子句通常需要与 GROUP BY 一起使用`,
-                vscode.DiagnosticSeverity.Warning
-            )
-            diagnostic.source = "Hive Formatter"
-            diagnostic.code = "HAVING_WITHOUT_GROUPBY"
-            diagnostics.push(diagnostic)
+            const beforeHaving = text.substring(0, match.index)
+            if (!/\bgroup\s+by\b/i.test(beforeHaving)) {
+                const lineCol = lineColFromIndex(text, match.index)
+                const lineNum = lineCol.line
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
+                    `【第 ${lineNum} 行】代码质量建议：HAVING 子句通常需要与 GROUP BY 一起使用`,
+                    vscode.DiagnosticSeverity.Warning
+                )
+                diagnostic.source = "Hive Formatter"
+                diagnostic.code = "HAVING_WITHOUT_GROUPBY"
+                diagnostics.push(diagnostic)
+            }
         }
     }
 
     // 2. 检查 LIMIT 没有数字
     private checkLimitWithoutNumber(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\blimit\b\s*(?!\d)/gi
+        const pattern = /\blimit\b\s*(?!\d|\?|:[$:?@]?\w+|ALL\b|OFFSET\b)/gi
         let match
         while ((match = pattern.exec(text)) !== null) {
             const lineCol = lineColFromIndex(text, match.index)
@@ -100,26 +103,25 @@ export class EnhancedSqlChecker {
 
     // 4. 检查使用保留字作为标识符
     private checkReservedWordIdentifiers(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const reservedWords = [
+        const reservedWords = new Set([
             'select', 'from', 'where', 'group', 'by', 'having', 'order', 'limit',
             'insert', 'update', 'delete', 'create', 'drop', 'alter', 'table',
             'join', 'left', 'right', 'inner', 'outer', 'full', 'on', 'and', 'or',
             'not', 'in', 'is', 'null', 'like', 'between', 'distinct', 'as', 'count',
             'sum', 'avg', 'max', 'min', 'union', 'all', 'any', 'exists', 'case',
             'when', 'then', 'else', 'end', 'default', 'values', 'set'
-        ]
-        
-        const pattern = /\b(\w+)\b(?!\s*\()/gi
+        ])
+
+        const aliasPattern = /\bas\s+(\w+)\b/gi
         let match
-        
-        while ((match = pattern.exec(text)) !== null) {
-            const word = match[1].toLowerCase()
-            if (reservedWords.includes(word) && !this.isReservedWordUsedAsKeyword(text, match.index)) {
-                const lineCol = lineColFromIndex(text, match.index)
+        while ((match = aliasPattern.exec(text)) !== null) {
+            const alias = match[1].toLowerCase()
+            if (reservedWords.has(alias)) {
+                const lineCol = lineColFromIndex(text, match.index + 3)
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
-                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + word.length),
-                    `【第 ${lineNum} 行】代码质量建议："${word}" 是保留字，建议避免用作标识符或添加反引号`,
+                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + match[1].length),
+                    `【第 ${lineNum} 行】代码质量建议："${match[1]}" 是保留字，建议避免用作别名或添加反引号`,
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -129,131 +131,30 @@ export class EnhancedSqlChecker {
         }
     }
 
-    private isReservedWordUsedAsKeyword(text: string, index: number): boolean {
-        const beforeText = text.substring(0, index).toLowerCase()
-        
-        const currentWord = text.substring(index).match(/^\w+/i)?.[0].toLowerCase()
-        if (!currentWord) return false
-        
-        // 特殊处理：CREATE/DROP/ALTER TABLE/... 等
-        if (currentWord === 'table' || currentWord === 'view' || currentWord === 'function' || 
-            currentWord === 'procedure' || currentWord === 'index' || currentWord === 'database' ||
-            currentWord === 'schema') {
-            // 检查前面是否有 create/drop/alter
-            if (/(create|drop|alter)\s*$/.test(beforeText)) {
-                return true
-            }
-        }
-        
-        // 特殊处理：INTO 在 INSERT 后面
-        if (currentWord === 'into' && /insert\s*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：SET 在 UPDATE 后面
-        if (currentWord === 'set' && /update\s*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：VALUES 在 INSERT 后面
-        if (currentWord === 'values' && /insert\s*.*\s*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：JOIN 相关
-        if (currentWord === 'join' || currentWord === 'inner' || currentWord === 'left' || 
-            currentWord === 'right' || currentWord === 'full' || currentWord === 'outer' ||
-            currentWord === 'using') {
-            if (/(from|join)\s*$/.test(beforeText)) {
-                return true
-            }
-        }
-        
-        // 特殊处理：ON 在 JOIN 后面
-        if (currentWord === 'on') {
-            // 检查前面一定范围内是否有 JOIN
-            const beforeTextExtended = text.substring(Math.max(0, index - 100), index).toLowerCase()
-            if (/\bjoin\b/i.test(beforeTextExtended)) {
-                return true
-            }
-        }
-        
-        // 特殊处理：BY 在 GROUP/ORDER 后面
-        if (currentWord === 'by' && /(group|order)\s*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：DISTINCT 在 SELECT 后面
-        if (currentWord === 'distinct' && /select\s*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：AND/OR/NOT/IN/IS/NULL/LIKE/BETWEEN 在 WHERE/HAVING 后面
-        if ((currentWord === 'and' || currentWord === 'or' || currentWord === 'not' ||
-             currentWord === 'in' || currentWord === 'is' || currentWord === 'null' ||
-             currentWord === 'like' || currentWord === 'between') &&
-            /(where|having)\s*.*$/.test(beforeText)) {
-            return true
-        }
-        
-        // 特殊处理：CASE 相关
-        if ((currentWord === 'when' && /case\s*$/.test(beforeText)) ||
-            (currentWord === 'then' && /when\s*.*$/.test(beforeText)) ||
-            (currentWord === 'else' && /(when|then)\s*.*$/.test(beforeText)) ||
-            (currentWord === 'end' && /(else|when)\s*.*$/.test(beforeText))) {
-            return true
-        }
-        
-        // 检查是否被反引号或引号包裹
-        let isQuoted = false
-        for (let i = index - 1; i >= 0; i--) {
-            if (text[i] === '`' || text[i] === "'" || text[i] === '"') {
-                isQuoted = true
-                break
-            }
-            if (/[a-z0-9_]/i.test(text[i])) {
-                continue
-            }
-            break
-        }
-        if (isQuoted) {
-            return true
-        }
-        
-        // 检查是否紧跟在常见关键字后面（说明它是关键字的一部分）
-        const standaloneKeywords = ['select', 'from', 'where', 'group', 'order', 'limit', 
-                                     'join', 'and', 'or', 'insert', 'update', 'delete',
-                                     'create', 'drop', 'alter', 'case', 'when', 'then', 
-                                     'else', 'end', 'default', 'values', 'set', 'as',
-                                     'union', 'all', 'any', 'exists']
-        
-        if (standaloneKeywords.includes(currentWord)) {
-            const beforeChar = index > 0 ? text[index - 1] : ''
-            const afterChar = text[index + currentWord.length] || ''
-            
-            if ((beforeChar === '' || /\s/.test(beforeChar)) && (afterChar === '' || /\s/.test(afterChar))) {
-                return true
-            }
-        }
-        
-        return false
-    }
-
     // 5. 检查空的 JOIN
     private checkEmptyJoin(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bjoin\b\s*(?![\w\s]+on)/gi
+        const pattern = /\bjoin\b/gi
         let match
         while ((match = pattern.exec(text)) !== null) {
-            const lineCol = lineColFromIndex(text, match.index)
-            const lineNum = lineCol.line
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                `【第 ${lineNum} 行】语法错误：JOIN 缺少 ON 子句`,
-                vscode.DiagnosticSeverity.Error
-            )
-            diagnostic.source = "Hive Formatter"
-            diagnostic.code = "EMPTY_JOIN"
-            diagnostics.push(diagnostic)
+            const beforeJoin = text.substring(0, match.index)
+            const joinTypeMatch = beforeJoin.match(/\b(cross|natural)\s*$/i)
+            if (joinTypeMatch) continue
+
+            const afterJoin = text.substring(match.index + 4)
+            const hasOnClause = /\bon\b/i.test(afterJoin.substring(0, 200))
+            const hasUsingClause = /\busing\b/i.test(afterJoin.substring(0, 200))
+            if (!hasOnClause && !hasUsingClause) {
+                const lineCol = lineColFromIndex(text, match.index)
+                const lineNum = lineCol.line
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
+                    `【第 ${lineNum} 行】代码质量建议：JOIN 缺少 ON 或 USING 子句`,
+                    vscode.DiagnosticSeverity.Warning
+                )
+                diagnostic.source = "Hive Formatter"
+                diagnostic.code = "EMPTY_JOIN"
+                diagnostics.push(diagnostic)
+            }
         }
     }
 
@@ -299,7 +200,7 @@ export class EnhancedSqlChecker {
             if (char === '(') {
                 openParens++
             } else if (char === ')') {
-                openParens--
+                if (openParens > 0) openParens--
             } else if (char === ';' && openParens === 0) {
                 endIndex = i + 1
                 break
@@ -341,19 +242,46 @@ export class EnhancedSqlChecker {
     // 8. 检查 WHERE 子句中使用聚合函数
     private checkAggregateInWhere(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const aggregates = ['count', 'sum', 'avg', 'max', 'min']
-        const pattern = new RegExp(`\\bwhere\\b[^;]*\\b(${aggregates.join('|')})\\s*\\(`, 'gi')
-        let match
-        while ((match = pattern.exec(text)) !== null) {
-            const lineCol = lineColFromIndex(text, match.index)
-            const lineNum = lineCol.line
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 5),
-                `【第 ${lineNum} 行】语法错误：聚合函数不能在 WHERE 子句中使用，应该使用 HAVING`,
-                vscode.DiagnosticSeverity.Error
-            )
-            diagnostic.source = "Hive Formatter"
-            diagnostic.code = "AGGREGATE_IN_WHERE"
-            diagnostics.push(diagnostic)
+        const wherePattern = /\bwhere\b/gi
+        let whereMatch
+        while ((whereMatch = wherePattern.exec(text)) !== null) {
+            const afterWhere = text.substring(whereMatch.index + 5)
+            const clauseEnd = afterWhere.search(/\b(group\s+by|having|order\s+by|limit|union|;|$)/i)
+            const whereClause = clauseEnd !== -1 ? afterWhere.substring(0, clauseEnd) : afterWhere
+
+            let parenDepth = 0
+            let inSubquery = false
+            for (let i = 0; i < whereClause.length; i++) {
+                if (whereClause[i] === '(') {
+                    parenDepth++
+                    if (parenDepth === 1 && /\bselect\b/i.test(whereClause.substring(i + 1, i + 7))) {
+                        inSubquery = true
+                    }
+                } else if (whereClause[i] === ')') {
+                    parenDepth--
+                    if (parenDepth === 0) inSubquery = false
+                }
+            }
+
+            if (!inSubquery) {
+                for (const agg of aggregates) {
+                    const aggPattern = new RegExp(`\\b${agg}\\s*\\(`, 'gi')
+                    let aggMatch
+                    while ((aggMatch = aggPattern.exec(whereClause)) !== null) {
+                        const absIndex = whereMatch.index + 5 + aggMatch.index
+                        const lineCol = lineColFromIndex(text, absIndex)
+                        const lineNum = lineCol.line
+                        const diagnostic = new vscode.Diagnostic(
+                            new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + agg.length),
+                            `【第 ${lineNum} 行】语法错误：聚合函数不能在 WHERE 子句中使用，应该使用 HAVING`,
+                            vscode.DiagnosticSeverity.Error
+                        )
+                        diagnostic.source = "Hive Formatter"
+                        diagnostic.code = "AGGREGATE_IN_WHERE"
+                        diagnostics.push(diagnostic)
+                    }
+                }
+            }
         }
     }
 
@@ -395,19 +323,38 @@ export class EnhancedSqlChecker {
 
     // 11. 检查不完整的 CASE 语句
     private checkIncompleteCase(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bcase\b(?!.*\bend\b)/gi
-        let match
-        while ((match = pattern.exec(text)) !== null) {
-            const lineCol = lineColFromIndex(text, match.index)
-            const lineNum = lineCol.line
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                `【第 ${lineNum} 行】语法错误：CASE 语句缺少 END 关键字`,
-                vscode.DiagnosticSeverity.Error
-            )
-            diagnostic.source = "Hive Formatter"
-            diagnostic.code = "INCOMPLETE_CASE"
-            diagnostics.push(diagnostic)
+        const casePattern = /\bcase\b/gi
+        let caseMatch
+        while ((caseMatch = casePattern.exec(text)) !== null) {
+            const afterCase = text.substring(caseMatch.index + 4)
+            let depth = 1
+            let hasEnd = false
+            let i = 0
+            while (i < afterCase.length && depth > 0) {
+                const rest = afterCase.substring(i)
+                if (/^\bcase\b/i.test(rest)) {
+                    depth++
+                    i += 4
+                } else if (/^\bend\b/i.test(rest)) {
+                    depth--
+                    if (depth === 0) hasEnd = true
+                    i += 3
+                } else {
+                    i++
+                }
+            }
+            if (!hasEnd) {
+                const lineCol = lineColFromIndex(text, caseMatch.index)
+                const lineNum = lineCol.line
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
+                    `【第 ${lineNum} 行】语法错误：CASE 语句缺少 END 关键字`,
+                    vscode.DiagnosticSeverity.Error
+                )
+                diagnostic.source = "Hive Formatter"
+                diagnostic.code = "INCOMPLETE_CASE"
+                diagnostics.push(diagnostic)
+            }
         }
     }
 
@@ -431,19 +378,34 @@ export class EnhancedSqlChecker {
 
     // 13. 检查子查询没有别名
     private checkSubqueryWithoutAlias(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bfrom\s*\([^)]*\)(?!\s+\w+)/gi
-        let match
-        while ((match = pattern.exec(text)) !== null) {
-            const lineCol = lineColFromIndex(text, match.index)
-            const lineNum = lineCol.line
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                `【第 ${lineNum} 行】代码质量建议：子查询应该指定别名`,
-                vscode.DiagnosticSeverity.Warning
-            )
-            diagnostic.source = "Hive Formatter"
-            diagnostic.code = "SUBQUERY_WITHOUT_ALIAS"
-            diagnostics.push(diagnostic)
+        const fromPattern = /\bfrom\s*\(/gi
+        let fromMatch
+        while ((fromMatch = fromPattern.exec(text)) !== null) {
+            const openParenIndex = text.indexOf('(', fromMatch.index + 4)
+            if (openParenIndex === -1) continue
+
+            let depth = 1
+            let closeParenIndex = openParenIndex + 1
+            while (closeParenIndex < text.length && depth > 0) {
+                if (text[closeParenIndex] === '(') depth++
+                else if (text[closeParenIndex] === ')') depth--
+                closeParenIndex++
+            }
+
+            const afterClose = text.substring(closeParenIndex).trimStart()
+            const hasAlias = /^\w+/.test(afterClose) && !/^(where|group|having|order|limit|union|on|join|inner|left|right|full|cross|natural|set|;|\))/i.test(afterClose)
+            if (!hasAlias) {
+                const lineCol = lineColFromIndex(text, fromMatch.index)
+                const lineNum = lineCol.line
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
+                    `【第 ${lineNum} 行】代码质量建议：子查询应该指定别名`,
+                    vscode.DiagnosticSeverity.Warning
+                )
+                diagnostic.source = "Hive Formatter"
+                diagnostic.code = "SUBQUERY_WITHOUT_ALIAS"
+                diagnostics.push(diagnostic)
+            }
         }
     }
 

@@ -161,6 +161,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    if (completionProvider) {
+        context.subscriptions.push(completionProvider)
+    }
+
     if (statusBarProvider) {
         context.subscriptions.push(statusBarProvider)
     }
@@ -195,13 +199,5 @@ function registerFormattingProviderForEachDialect() {
 }
 
 export function deactivate() {
-    if (diagnosticsProvider) {
-        diagnosticsProvider.dispose()
-    }
-    if (statusBarProvider) {
-        statusBarProvider.dispose()
-    }
-    if (parameterHighlighter) {
-        parameterHighlighter.dispose()
-    }
+    // Resources are automatically disposed via context.subscriptions
 }

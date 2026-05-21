@@ -134,6 +134,9 @@ function activate(context) {
             console.error('Hive Formatter: failed to register CompletionProvider', e);
         }
     }
+    if (completionProvider) {
+        context.subscriptions.push(completionProvider);
+    }
     if (statusBarProvider) {
         context.subscriptions.push(statusBarProvider);
     }
@@ -158,14 +161,6 @@ function registerFormattingProviderForEachDialect() {
     return Object.entries(sqlDialects_1.sqlDialects).map(([vscodeLang, sqlDialectName]) => vscode.languages.registerDocumentFormattingEditProvider(vscodeLang, new SqlFormattingProvider_1.SqlFormattingProvider(sqlDialectName)));
 }
 function deactivate() {
-    if (diagnosticsProvider) {
-        diagnosticsProvider.dispose();
-    }
-    if (statusBarProvider) {
-        statusBarProvider.dispose();
-    }
-    if (parameterHighlighter) {
-        parameterHighlighter.dispose();
-    }
+    // Resources are automatically disposed via context.subscriptions
 }
 //# sourceMappingURL=extension.js.map

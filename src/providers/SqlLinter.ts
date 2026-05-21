@@ -163,23 +163,28 @@ export class SqlLinter {
     }
 
     private checkExplicitJoinType(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bfrom\b[^;]*?\bjoin\b(?!\s*(?:inner|left|right|full|outer|cross))/gi
+        const joinPattern = /\bjoin\b/gi
         let match
-        while ((match = pattern.exec(text)) !== null) {
-            const joinIndex = match[0].toLowerCase().lastIndexOf('join')
-            if (joinIndex !== -1) {
-                this.addDiagnostic(text, document, diagnostics, match.index + (match[0].length - 4), 4, "建议显式指定 JOIN 类型（INNER/LEFT/RIGHT）", "explicit_join_type")
-            }
+        while ((match = joinPattern.exec(text)) !== null) {
+            const beforeJoin = text.substring(Math.max(0, match.index - 30), match.index)
+            if (/\b(inner|left|right|full|outer|cross)\s*$/i.test(beforeJoin)) continue
+            if (/\bnatural\s*$/i.test(beforeJoin)) continue
+
+            this.addDiagnostic(text, document, diagnostics, match.index, 4, "建议显式指定 JOIN 类型（INNER/LEFT/RIGHT）", "explicit_join_type")
         }
     }
 
     private checkLimitWithOrderBy(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const selectPattern = /\bselect\b[^;]*?\blimit\b(?!.*\border\s+by\b)/gi
+        const limitPattern = /\blimit\b/gi
         let match
-        while ((match = selectPattern.exec(text)) !== null) {
-            const limitIndex = match[0].toLowerCase().lastIndexOf('limit')
-            if (limitIndex !== -1) {
-                this.addDiagnostic(text, document, diagnostics, match.index + limitIndex, 5, "使用 LIMIT 时建议同时使用 ORDER BY 以确保结果稳定", "limit_with_order_by")
+        while ((match = limitPattern.exec(text)) !== null) {
+            const beforeLimit = text.substring(0, match.index)
+            const selectMatch = /\bselect\b[^;]*$/i.exec(beforeLimit)
+            if (selectMatch) {
+                const selectToLimit = selectMatch[0]
+                if (!/\border\s+by\b/i.test(selectToLimit)) {
+                    this.addDiagnostic(text, document, diagnostics, match.index, 5, "使用 LIMIT 时建议同时使用 ORDER BY 以确保结果稳定", "limit_with_order_by")
+                }
             }
         }
     }
@@ -224,13 +229,17 @@ export class SqlLinter {
     }
 
     private checkMissingPrimaryKey(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const pattern = /\bcreate\s+table\b(?!.*\bprimary\s+key\b)/gi
+        const pattern = /\bcreate\s+table\b/gi
         let match
         while ((match = pattern.exec(text)) !== null) {
-            // 检查是否有常见的主键字段名，如果有就不警告
-            const hasCommonIdFields = /\b(id|uuid|guid|_id|Id|ID|UUID|GUID)\b/i.test(match.input.slice(match.index))
-            if (!hasCommonIdFields) {
-                this.addDiagnostic(text, document, diagnostics, match.index, 12, "CREATE TABLE 语句建议定义主键", "missing_primary_key")
+            const afterCreate = text.substring(match.index)
+            const semicolonMatch = /;/.exec(afterCreate)
+            const statementText = semicolonMatch ? afterCreate.substring(0, semicolonMatch.index) : afterCreate
+            if (!/\bprimary\s+key\b/i.test(statementText)) {
+                const hasCommonIdFields = /\b(id|uuid|guid|_id|Id|ID|UUID|GUID)\b/i.test(statementText)
+                if (!hasCommonIdFields) {
+                    this.addDiagnostic(text, document, diagnostics, match.index, 12, "CREATE TABLE 语句建议定义主键", "missing_primary_key")
+                }
             }
         }
     }
@@ -245,16 +254,29 @@ export class SqlLinter {
     }
 
     private checkDuplicateColumnAliases(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
-        const selectPattern = /\bselect\b(.*?)\bfrom\b/gi
+        const selectPattern = /\bselect\b/gi
         let selectMatch
-        
+
         while ((selectMatch = selectPattern.exec(text)) !== null) {
-            const columnsPart = selectMatch[1]
+            const afterSelect = text.substring(selectMatch.index + 6)
+            let depth = 0
+            let fromIndex = -1
+            for (let i = 0; i < afterSelect.length; i++) {
+                if (afterSelect[i] === '(') depth++
+                else if (afterSelect[i] === ')') depth--
+                else if (depth === 0 && afterSelect.substring(i, i + 4).match(/\bfrom\b/i)) {
+                    fromIndex = i
+                    break
+                }
+            }
+            if (fromIndex === -1) continue
+
+            const columnsPart = afterSelect.substring(0, fromIndex)
             const aliases = new Map<string, number[]>()
-            
+
             const aliasPattern = /\b(\w+)\b(?:\s+as\s+)?(\w+)?/gi
             let aliasMatch
-            
+
             while ((aliasMatch = aliasPattern.exec(columnsPart)) !== null) {
                 const alias = (aliasMatch[2] || aliasMatch[1]).toLowerCase()
                 if (!aliases.has(alias)) {
@@ -262,10 +284,10 @@ export class SqlLinter {
                 }
                 const aliasPositions = aliases.get(alias)
                 if (aliasPositions) {
-                    aliasPositions.push(selectMatch.index + aliasMatch.index)
+                    aliasPositions.push(selectMatch.index + 6 + aliasMatch.index)
                 }
             }
-            
+
             for (const [alias, positions] of aliases) {
                 if (positions.length > 1) {
                     for (let i = 1; i < positions.length; i++) {
@@ -303,11 +325,13 @@ export class SqlLinter {
 
     private checkLongQueryLine(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         const lines = text.split('\n')
-        lines.forEach(line => {
+        let offset = 0
+        for (const line of lines) {
             if (line.length > 120 && (line.toLowerCase().includes('select') || line.toLowerCase().includes('join') || line.toLowerCase().includes('where'))) {
-                this.addDiagnostic(text, document, diagnostics, text.indexOf(line), Math.min(line.length, 120), "建议将长查询多行格式化", "long_query_line")
+                this.addDiagnostic(text, document, diagnostics, offset, Math.min(line.length, 120), "建议将长查询多行格式化", "long_query_line")
             }
-        })
+            offset += line.length + 1
+        }
     }
 
     private checkExplicitColumnAliasing(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
@@ -517,13 +541,14 @@ export class SqlLinter {
         let groupStart = -1
         let groupText = ''
         let groupStartIndex = 0
+        let offset = 0
 
         for (let i = 0; i < lines.length; i++) {
             const trimmed = lines[i].trim()
             if (trimmed.startsWith('--')) {
                 if (groupStart === -1) {
                     groupStart = i
-                    groupStartIndex = text.indexOf(lines[i])
+                    groupStartIndex = offset
                     groupText = trimmed
                 } else {
                     groupText += '\n' + trimmed
@@ -535,6 +560,7 @@ export class SqlLinter {
                     groupText = ''
                 }
             }
+            offset += lines[i].length + 1
         }
         if (groupStart !== -1) {
             groups.push({ startIndex: groupStartIndex, lineCount: lines.length - groupStart, text: groupText })

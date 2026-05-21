@@ -13,6 +13,12 @@ const dialectNameMap: Record<string, string> = {
     mysql: "mysql",
     spark: "spark",
     sql: "sql",
+    postgresql: "postgresql",
+    oracle: "oracle",
+    bigquery: "bigquery",
+    snowflake: "snowflake",
+    presto: "presto",
+    sqlite: "sqlite",
 }
 
 export const supportedDialects = Object.keys(dialectNameMap)
