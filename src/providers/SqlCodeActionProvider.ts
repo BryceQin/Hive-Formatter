@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { t } from '../i18n'
 
 export class SqlCodeActionProvider implements vscode.CodeActionProvider {
     public static readonly providedCodeActionKinds = [
@@ -67,7 +68,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '添加查询说明注释',
+            t('codeAction.addQueryComment'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -89,7 +90,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '添加 COMMENT 占位符',
+            t('codeAction.addCommentPlaceholder'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -120,18 +121,18 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         const actions: vscode.CodeAction[] = []
 
         const uncommentAction = new vscode.CodeAction(
-            '取消注释',
+            t('codeAction.uncomment'),
             vscode.CodeActionKind.QuickFix
         )
         uncommentAction.diagnostics = [diagnostic]
         uncommentAction.command = {
             command: 'hive-formatter.toggleComment',
-            title: '取消注释'
+            title: t('codeAction.uncomment')
         }
         actions.push(uncommentAction)
 
         const deleteAction = new vscode.CodeAction(
-            '删除注释代码',
+            t('codeAction.deleteCommentedCode'),
             vscode.CodeActionKind.QuickFix
         )
         deleteAction.diagnostics = [diagnostic]
@@ -150,7 +151,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         const line = document.lineAt(diagnostic.range.start.line).text
 
         const doneAction = new vscode.CodeAction(
-            '标记为已完成',
+            t('codeAction.markAsCompleted'),
             vscode.CodeActionKind.QuickFix
         )
         doneAction.diagnostics = [diagnostic]
@@ -162,7 +163,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
 
         const today = new Date().toISOString().slice(0, 10)
         const updateDateAction = new vscode.CodeAction(
-            '更新日期为今天',
+            t('codeAction.updateDate'),
             vscode.CodeActionKind.QuickFix
         )
         updateDateAction.diagnostics = [diagnostic]
@@ -172,7 +173,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         actions.push(updateDateAction)
 
         const removeAction = new vscode.CodeAction(
-            '移除标记',
+            t('codeAction.removeMarker'),
             vscode.CodeActionKind.QuickFix
         )
         removeAction.diagnostics = [diagnostic]
@@ -188,7 +189,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '将 = NULL 改为 IS NULL',
+            t('codeAction.fixNullComparison'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -222,7 +223,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '添加 GROUP BY 子句',
+            t('codeAction.addGroupBy'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -259,7 +260,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '用反引号包裹标识符',
+            t('codeAction.wrapWithBacktick'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -279,7 +280,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '为子查询添加别名',
+            t('codeAction.addSubqueryAlias'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]
@@ -299,7 +300,7 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         diagnostic: vscode.Diagnostic
     ): vscode.CodeAction {
         const action = new vscode.CodeAction(
-            '添加列名占位符',
+            t('codeAction.addColumnPlaceholder'),
             vscode.CodeActionKind.QuickFix
         )
         action.diagnostics = [diagnostic]

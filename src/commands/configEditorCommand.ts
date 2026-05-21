@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { format, type SqlLanguage } from '../formatter/sqlFormatter'
 import type { KeywordCase, DataTypeCase, FunctionCase, IndentStyle, LogicalOperatorNewline } from '../formatter/FormatOptions'
+import { t } from '../i18n'
 
 export class ConfigEditorPanel {
     public static currentPanel: ConfigEditorPanel | undefined
@@ -21,7 +22,7 @@ export class ConfigEditorPanel {
 
         const panel = vscode.window.createWebviewPanel(
             ConfigEditorPanel.viewType,
-            'Hive Formatter - 配置编辑器',
+            t('configEditor.panelTitle'),
             column || vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -56,7 +57,7 @@ export class ConfigEditorPanel {
                         await this._resetConfig()
                         break
                     case 'previewFormat':
-                        await this._previewFormat(message.sql)
+                        await this._previewFormat(message.sql, message.config)
                         break
                     case 'getCurrentConfig':
                         await this._sendCurrentConfig()
@@ -2549,7 +2550,7 @@ export class ConfigEditorPanel {
             try { await config.update(key, value, vscode.ConfigurationTarget.Global) } catch { /* skip */ }
         }
 
-        vscode.window.showInformationMessage('配置已保存！')
+        vscode.window.showInformationMessage(t('notification.configSaved'))
     }
 
     private async _resetConfig() {
@@ -2650,21 +2651,27 @@ export class ConfigEditorPanel {
         await this._sendCurrentConfig()
     }
 
-    private async _previewFormat(sql: string) {
+    private async _previewFormat(sql: string, webviewConfig?: Record<string, unknown>) {
         try {
             const config = vscode.workspace.getConfiguration('Hive-Formatter')
+            const get = <T>(key: string, defaultValue: T): T => {
+                if (webviewConfig && key in webviewConfig && webviewConfig[key] !== undefined) {
+                    return webviewConfig[key] as T
+                }
+                return config.get<T>(key, defaultValue)
+            }
             const result = format(sql, {
-                language: config.get('dialect', 'hive') as SqlLanguage,
-                keywordCase: config.get('keywordCase', 'preserve') as KeywordCase,
-                dataTypeCase: config.get('dataTypeCase', 'preserve') as DataTypeCase,
-                functionCase: config.get('functionCase', 'preserve') as FunctionCase,
-                identifierCase: config.get('identifierCase', 'preserve') as KeywordCase,
-                indentStyle: config.get('indentStyle', 'standard') as IndentStyle,
-                logicalOperatorNewline: config.get('logicalOperatorNewline', 'before') as LogicalOperatorNewline,
-                expressionWidth: config.get('expressionWidth', 50),
-                linesBetweenQueries: config.get('linesBetweenQueries', 1),
-                denseOperators: config.get('denseOperators', false),
-                newlineBeforeSemicolon: config.get('newlineBeforeSemicolon', false)
+                language: get('dialect', 'hive') as SqlLanguage,
+                keywordCase: get('keywordCase', 'preserve') as KeywordCase,
+                dataTypeCase: get('dataTypeCase', 'preserve') as DataTypeCase,
+                functionCase: get('functionCase', 'preserve') as FunctionCase,
+                identifierCase: get('identifierCase', 'preserve') as KeywordCase,
+                indentStyle: get('indentStyle', 'standard') as IndentStyle,
+                logicalOperatorNewline: get('logicalOperatorNewline', 'before') as LogicalOperatorNewline,
+                expressionWidth: get('expressionWidth', 50),
+                linesBetweenQueries: get('linesBetweenQueries', 1),
+                denseOperators: get('denseOperators', false),
+                newlineBeforeSemicolon: get('newlineBeforeSemicolon', false)
             })
             
             this._panel.webview.postMessage({

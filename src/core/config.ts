@@ -128,9 +128,10 @@ const createIndentationConfig = (
     formattingOptions: vscode.FormattingOptions,
 ): FormatOptionsWithLanguage => {
     if (extensionSettings.get<boolean>("ignoreTabSettings")) {
+        const tabSizeOverride = extensionSettings.get<number>("tabSizeOverride")
         return {
-            tabWidth: extensionSettings.get<number>("tabSizeOverride"),
-            useTabs: !extensionSettings.get<boolean>("insertSpacesOverride"),
+            tabWidth: (tabSizeOverride !== undefined && tabSizeOverride > 0) ? tabSizeOverride : 2,
+            useTabs: !extensionSettings.get<boolean>("insertSpacesOverride", true),
         }
     } else {
         return {

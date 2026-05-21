@@ -12,12 +12,14 @@ import { SqlFoldingRangeProvider } from "./providers/SqlFoldingRangeProvider"
 import { SqlOutlineProvider } from "./providers/SqlOutlineProvider"
 import { SqlParameterHighlighter, SqlParameterReplaceCommand } from "./providers/SqlParameterHightlighter"
 import { SqlCompletionProvider, } from "./completion"
+import { initI18n } from "./i18n"
 
 let diagnosticsProvider: SqlDiagnosticsProvider
 let statusBarProvider: StatusBarProvider
 let parameterHighlighter: SqlParameterHighlighter
 
 export function activate(context: vscode.ExtensionContext) {
+    initI18n()
     console.log('Hive Formatter: activating...')
 
     try {

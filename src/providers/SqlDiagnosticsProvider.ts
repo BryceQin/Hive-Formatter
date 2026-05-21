@@ -5,6 +5,7 @@ import { createDialect } from "../languages/dialect"
 import type { DialectOptions } from "../languages/dialect"
 import * as allDialects from "../languages/allDialects"
 import { lineColFromIndex } from "../lexer/lineColFromIndex"
+import { t } from "../i18n"
 import { EnhancedSqlChecker } from "./EnhancedSqlChecker"
 import { SqlLinter } from "./SqlLinter"
 
@@ -132,7 +133,7 @@ export class SqlDiagnosticsProvider {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                `【第 ${lineNum} 行】语法错误：逗号后面缺少列名或表达式`,
+                t('diagnostic.missingColumnAfterComma', String(lineNum)),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -169,7 +170,7 @@ export class SqlDiagnosticsProvider {
                     const lineNum = lineCol.line;
                     const diagnostic = new vscode.Diagnostic(
                         new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                        `【第 ${lineNum} 行】语法错误：SELECT 关键字后面缺少要查询的列名`,
+                        t('diagnostic.missingColumnAfterSelect', String(lineNum)),
                         vscode.DiagnosticSeverity.Error
                     );
                     diagnostic.source = "Hive Formatter";
@@ -198,7 +199,7 @@ export class SqlDiagnosticsProvider {
                 const lineNum = lineCol.line;
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                    `【第 ${lineNum} 行】语法错误：FROM 关键字后面缺少表名`,
+                    t('diagnostic.missingTableAfterFrom', String(lineNum)),
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostic.source = "Hive Formatter";
@@ -252,7 +253,7 @@ export class SqlDiagnosticsProvider {
                     const lineNum = lineCol.line
                     const diagnostic = new vscode.Diagnostic(
                         new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                        `【第 ${lineNum} 行】语法错误：发现多余的右括号 ")"，没有对应的左括号 "("`,
+                        t('diagnostic.extraRightParen', String(lineNum)),
                         vscode.DiagnosticSeverity.Error
                     )
                     diagnostic.source = "Hive Formatter"
@@ -268,7 +269,7 @@ export class SqlDiagnosticsProvider {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                `【第 ${lineNum} 行】语法错误：左括号 "(" 没有被正确闭合，缺少对应的右括号 ")"`,
+                t('diagnostic.unclosedLeftParen', String(lineNum)),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -326,7 +327,7 @@ export class SqlDiagnosticsProvider {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                `【第 ${lineNum} 行】语法错误：字符串没有正确闭合，缺少结束的 ${currentQuote}`,
+                t('diagnostic.unclosedString', String(lineNum), currentQuote),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -353,7 +354,7 @@ export class SqlDiagnosticsProvider {
                 const lineNum = lineCol.line;
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 8),
-                    `【第 ${lineNum} 行】语法错误：ORDER BY 后面缺少排序的列名`,
+                    t('diagnostic.missingOrderByColumn', String(lineNum)),
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostic.source = "Hive Formatter";
@@ -381,7 +382,7 @@ export class SqlDiagnosticsProvider {
                 const lineNum = lineCol.line;
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 5),
-                    `【第 ${lineNum} 行】语法错误：WHERE 后面缺少查询条件`,
+                    t('diagnostic.missingWhereCondition', String(lineNum)),
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostic.source = "Hive Formatter";
@@ -409,7 +410,7 @@ export class SqlDiagnosticsProvider {
                 const lineNum = lineCol.line;
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 8),
-                    `【第 ${lineNum} 行】语法错误：GROUP BY 后面缺少分组的列名`,
+                    t('diagnostic.missingGroupByColumn', String(lineNum)),
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostic.source = "Hive Formatter";
@@ -427,7 +428,7 @@ export class SqlDiagnosticsProvider {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                `【第 ${lineNum} 行】语法警告：在右括号前发现多余的逗号`,
+                t('diagnostic.trailingCommaBeforeParen', String(lineNum)),
                 vscode.DiagnosticSeverity.Warning
             )
             diagnostic.source = "Hive Formatter"
@@ -441,7 +442,7 @@ export class SqlDiagnosticsProvider {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 1),
-                `【第 ${lineNum} 行】语法警告：在语句结束前发现多余的逗号`,
+                t('diagnostic.trailingCommaBeforeEnd', String(lineNum)),
                 vscode.DiagnosticSeverity.Warning
             )
             diagnostic.source = "Hive Formatter"
@@ -455,7 +456,7 @@ export class SqlDiagnosticsProvider {
         text: string,
         document: vscode.TextDocument,
     ): vscode.Diagnostic | undefined {
-        let message = "SQL 语法错误"
+        let message = t('diagnostic.sqlSyntaxError')
         let line = 0
         let col = 0
         let endLine = 0

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { sqlDialects } from '../core/sqlDialects'
+import { t } from '../i18n'
 
 export class SqlParameterHighlighter {
     private decorationType: vscode.TextEditorDecorationType
@@ -80,7 +81,7 @@ export class SqlParameterHighlighter {
                 
                 decorations.push({
                     range,
-                    hoverMessage: `Parameter: ${currentParameter}`
+                    hoverMessage: t('paramHover', currentParameter)
                 })
             }
             
@@ -117,13 +118,13 @@ export class SqlParameterReplaceCommand {
         return vscode.commands.registerCommand('hive-formatter.replaceParameter', async () => {
             const editor = vscode.window.activeTextEditor
             if (!editor) {
-                vscode.window.showErrorMessage('No active editor')
+                vscode.window.showErrorMessage(t('notification.noActiveEditor'))
                 return
             }
             
             const document = editor.document
             if (document.languageId !== 'sql' && document.languageId !== 'hive') {
-                vscode.window.showErrorMessage('Not an SQL document')
+                vscode.window.showErrorMessage(t('notification.notSqlDocument'))
                 return
             }
             
@@ -146,14 +147,14 @@ export class SqlParameterReplaceCommand {
             }
             
             if (!currentParameter) {
-                vscode.window.showInformationMessage('No parameter under cursor')
+                vscode.window.showInformationMessage(t('notification.noParameterFound'))
                 return
             }
             
             // 询问新值
             const newValue = await vscode.window.showInputBox({
-                prompt: `Replace ${currentParameter} with:`,
-                placeHolder: 'Enter new value',
+                prompt: t('notification.replaceParameter', currentParameter),
+                placeHolder: t('notification.replaceParameterPlaceholder'),
                 value: currentParameter
             })
             
@@ -179,7 +180,7 @@ export class SqlParameterReplaceCommand {
                 }
             })
             
-            vscode.window.showInformationMessage(`Replaced all occurrences of ${currentParameter}`)
+            vscode.window.showInformationMessage(t('notification.replacedAll', currentParameter))
         })
     }
 }

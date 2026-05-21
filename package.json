@@ -2,7 +2,7 @@
     "name": "hive-formatter",
     "displayName": "Hive Formatter",
     "description": "一个用于 Hive、MySQL、SparkSQL 格式化的 VSCode 插件，支持 SQL IntelliSense 智能补全、语法检查和 MySQL/HiveSQL 互相转换",
-    "version": "0.19.2",
+    "version": "0.20.0",
     "publisher": "bryce-qin",
     "contributors": [
         "TalDu"
@@ -215,6 +215,18 @@
                 "default": "hive",
                 "markdownDescription": "选择使用的SQL方言。强烈建议选择否则可能出错。"
             },
+                "Hive-Formatter.displayLanguage": {
+                    "type": "string",
+                    "enum": ["auto", "zh", "en"],
+                    "enumDescriptions": [
+                        "%hive-formatter.config.displayLanguage.enumDescriptions.auto%",
+                        "%hive-formatter.config.displayLanguage.enumDescriptions.zh%",
+                        "%hive-formatter.config.displayLanguage.enumDescriptions.en%"
+                    ],
+                    "default": "auto",
+                    "markdownDescription": "%hive-formatter.config.displayLanguage.markdownDescription%",
+                    "order": 1
+                },
                 "Hive-Formatter.ignoreTabSettings": {
                     "type": "boolean",
                     "default": false,

@@ -1,5 +1,19 @@
 # 更新日志
 
+## 0.20.0
+- 修复 UTC_TMESTAMP 拼写错误（应为 UTC_TIMESTAMP），删除非标准的 UTCTIMESTAMP
+- 修复 Hive 格式化器缺少 LATERAL VIEW 子句（导致 LATERAL VIEW 格式化不正确）
+- 修复 STRING/TINYINT 被错误分类为关键字而非数据类型（影响 dataTypeCase 配置）
+- 删除非 Hive 关键字 TIMESTAMPTZ（PostgreSQL 类型）
+- 修复 commentCompletion 中 removeCommentsAndStrings 处理顺序错误（字符串含 -- 被截断）
+- 修复 commentCompletion 中字符串正则不处理 SQL 转义引号 ''
+- 修复 commentCompletion 中 FROM/JOIN 正则缺少 \b 词边界
+- 修复 identifierCompletion 中 alias 未转义直接注入正则（特殊字符导致崩溃）
+- 修复 validateConfig 中 validateParamTypes 未校验正则表达式合法性
+- 修复 config.ts 中 tabSizeOverride 可能为 undefined 导致格式化器崩溃
+- 修复 configEditorCommand 中 _previewFormat 忽略 webview 未保存配置（预览不反映修改）
+- 修复 commentCommands 中 isInsideCreateTable 括号计数错误
+
 ## 0.19.2
 - 修复 checkIncompleteCase 中 substring+\b 词边界 Bug（encase/suitcase 等被误匹配为 CASE）
 - 修复 checkDateFunctionUsage 中 now()/sysdate() 正则将括号当作捕获组

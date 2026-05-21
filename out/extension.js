@@ -49,10 +49,12 @@ const SqlFoldingRangeProvider_1 = require("./providers/SqlFoldingRangeProvider")
 const SqlOutlineProvider_1 = require("./providers/SqlOutlineProvider");
 const SqlParameterHightlighter_1 = require("./providers/SqlParameterHightlighter");
 const completion_1 = require("./completion");
+const i18n_1 = require("./i18n");
 let diagnosticsProvider;
 let statusBarProvider;
 let parameterHighlighter;
 function activate(context) {
+    (0, i18n_1.initI18n)();
     console.log('Hive Formatter: activating...');
     try {
         diagnosticsProvider = new SqlDiagnosticsProvider_1.SqlDiagnosticsProvider();

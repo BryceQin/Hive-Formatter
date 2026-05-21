@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { lineColFromIndex } from "../lexer/lineColFromIndex"
+import { t } from "../i18n"
 
 export class EnhancedSqlChecker {
     public checkEnhancedIssues(text: string, document: vscode.TextDocument): vscode.Diagnostic[] {
@@ -36,7 +37,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                    `【第 ${lineNum} 行】代码质量建议：HAVING 子句通常需要与 GROUP BY 一起使用`,
+                    t('enhanced.havingWithoutGroupBy', String(lineNum)),
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -55,7 +56,7 @@ export class EnhancedSqlChecker {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 5),
-                `【第 ${lineNum} 行】语法错误：LIMIT 后面需要指定数字`,
+                t('enhanced.limitWithoutNumber', String(lineNum)),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -90,7 +91,7 @@ export class EnhancedSqlChecker {
                     const lineNum = lineCol.line
                     const diagnostic = new vscode.Diagnostic(
                         new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + alias.length),
-                        `【第 ${lineNum} 行】代码质量建议：表别名 "${alias}" 重复使用，可能造成混淆`,
+                        t('enhanced.duplicateAlias', String(lineNum), alias),
                         vscode.DiagnosticSeverity.Warning
                     )
                     diagnostic.source = "Hive Formatter"
@@ -121,7 +122,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + match[1].length),
-                    `【第 ${lineNum} 行】代码质量建议："${match[1]}" 是保留字，建议避免用作别名或添加反引号`,
+                    t('enhanced.reservedWordIdentifier', String(lineNum), match[1]),
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -148,7 +149,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                    `【第 ${lineNum} 行】代码质量建议：JOIN 缺少 ON 或 USING 子句`,
+                    t('enhanced.joinMissingOn', String(lineNum)),
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -179,7 +180,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                    `【第 ${lineNum} 行】代码质量建议：SELECT 语句通常需要 FROM 子句`,
+                    t('enhanced.selectWithoutFrom', String(lineNum)),
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -230,7 +231,7 @@ export class EnhancedSqlChecker {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 8),
-                `【第 ${lineNum} 行】语法错误：DISTINCT 应该紧跟在 SELECT 后面，而不是在列中间`,
+                t('enhanced.distinctMisplaced', String(lineNum)),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -282,7 +283,7 @@ export class EnhancedSqlChecker {
                         const lineNum = lineCol.line
                         const diagnostic = new vscode.Diagnostic(
                             new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + agg.length),
-                            `【第 ${lineNum} 行】语法错误：聚合函数不能在 WHERE 子句中使用，应该使用 HAVING`,
+                            t('enhanced.aggregateInWhere', String(lineNum)),
                             vscode.DiagnosticSeverity.Error
                         )
                         diagnostic.source = "Hive Formatter"
@@ -303,7 +304,7 @@ export class EnhancedSqlChecker {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                `【第 ${lineNum} 行】语法错误：UPDATE 语句中不能使用 * 作为列名`,
+                t('enhanced.starInUpdate', String(lineNum)),
                 vscode.DiagnosticSeverity.Error
             )
             diagnostic.source = "Hive Formatter"
@@ -321,7 +322,7 @@ export class EnhancedSqlChecker {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 6),
-                `【第 ${lineNum} 行】代码质量建议：INSERT 语句建议明确指定列名`,
+                t('enhanced.insertWithoutColumns', String(lineNum)),
                 vscode.DiagnosticSeverity.Warning
             )
             diagnostic.source = "Hive Formatter"
@@ -357,7 +358,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                    `【第 ${lineNum} 行】语法错误：CASE 语句缺少 END 关键字`,
+                    t('enhanced.caseMissingEnd', String(lineNum)),
                     vscode.DiagnosticSeverity.Error
                 )
                 diagnostic.source = "Hive Formatter"
@@ -376,7 +377,7 @@ export class EnhancedSqlChecker {
             const lineNum = lineCol.line
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 5),
-                `【第 ${lineNum} 行】代码质量建议：COUNT(DISTINCT *) 是冗余的，直接使用 COUNT(*) 即可`,
+                t('enhanced.countDistinctStar', String(lineNum)),
                 vscode.DiagnosticSeverity.Warning
             )
             diagnostic.source = "Hive Formatter"
@@ -408,7 +409,7 @@ export class EnhancedSqlChecker {
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + 4),
-                    `【第 ${lineNum} 行】代码质量建议：子查询应该指定别名`,
+                    t('enhanced.subqueryMissingAlias', String(lineNum)),
                     vscode.DiagnosticSeverity.Warning
                 )
                 diagnostic.source = "Hive Formatter"
@@ -429,7 +430,7 @@ export class EnhancedSqlChecker {
             const suggestion = operator === '=' ? 'IS NULL' : 'IS NOT NULL'
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + match[0].length),
-                `【第 ${lineNum} 行】代码质量建议：NULL 比较应该使用 ${suggestion} 而不是 ${operator} NULL`,
+                t('enhanced.nullComparison', String(lineNum), suggestion, operator),
                 vscode.DiagnosticSeverity.Warning
             )
             diagnostic.source = "Hive Formatter"
@@ -441,22 +442,17 @@ export class EnhancedSqlChecker {
     // 15. 检查日期函数使用（Hive vs MySQL 差异）
     private checkDateFunctionUsage(text: string, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]): void {
         // 检查 MySQL 特有的日期函数
-        const mysqlFunctions = [
-            { func: 'date_add', hint: '在 Hive 中使用 date_add 也可以，但建议确认版本' },
-            { func: 'date_sub', hint: '在 Hive 中使用 date_sub 也可以，但建议确认版本' },
-            { func: 'now', hint: '在 Hive 中可以使用 current_timestamp()' },
-            { func: 'sysdate', hint: '在 Hive 中可以使用 current_timestamp()' }
-        ]
+        const mysqlFunctions = ['date_add', 'date_sub', 'now', 'sysdate']
         
-        for (const funcInfo of mysqlFunctions) {
-            const pattern = new RegExp(`\\b${funcInfo.func}\\s*\\(`, 'gi')
+        for (const funcName of mysqlFunctions) {
+            const pattern = new RegExp(`\\b${funcName}\\s*\\(`, 'gi')
             let match
             while ((match = pattern.exec(text)) !== null) {
                 const lineCol = lineColFromIndex(text, match.index)
                 const lineNum = lineCol.line
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(lineNum - 1, lineCol.col, lineNum - 1, lineCol.col + match[0].length),
-                    `【第 ${lineNum} 行】方言提示：${funcInfo.hint}`,
+                    t('enhanced.dateFunctionHint', funcName),
                     vscode.DiagnosticSeverity.Information
                 )
                 diagnostic.source = "Hive Formatter"
