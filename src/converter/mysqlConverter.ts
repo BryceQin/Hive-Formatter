@@ -35,9 +35,9 @@ export class MysqlToHiveConverter {
   private restoreYearColumnNames(sql: string): string {
     let result = sql
     for (let i = this.yearPlaceholders.length - 1; i >= 0; i--) {
-            const { placeholder, original } = this.yearPlaceholders[i]
-            result = result.replace(placeholder, original)
-        }
+      const { placeholder, original } = this.yearPlaceholders[i]
+      result = result.replace(placeholder, original)
+    }
     this.yearPlaceholders = []
     this.yearIndex = 0
     return result
