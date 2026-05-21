@@ -162,15 +162,19 @@ export class SqlParameterReplaceCommand {
             }
             
             // 替换所有匹配
+            const fullText = document.getText()
+            const paramRegex = new RegExp(currentParameter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
+            const ranges: vscode.Range[] = []
+            let match
+
+            while ((match = paramRegex.exec(fullText)) !== null) {
+                const startPos = document.positionAt(match.index)
+                const endPos = document.positionAt(match.index + match[0].length)
+                ranges.push(new vscode.Range(startPos, endPos))
+            }
+            ranges.reverse()
             await editor.edit(editBuilder => {
-                const text = document.getText()
-                const paramRegex = new RegExp(currentParameter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
-                let match
-                
-                while ((match = paramRegex.exec(text)) !== null) {
-                    const startPos = document.positionAt(match.index)
-                    const endPos = document.positionAt(match.index + match[0].length)
-                    const range = new vscode.Range(startPos, endPos)
+                for (const range of ranges) {
                     editBuilder.replace(range, newValue)
                 }
             })

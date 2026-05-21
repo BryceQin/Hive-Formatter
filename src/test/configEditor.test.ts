@@ -209,7 +209,8 @@ suite('回归测试 - 现有功能完整性', () => {
             
             await new Promise(resolve => setTimeout(resolve, 2000))
             
-            assert.ok(vscode.languages.getDiagnostics(document.uri).length >= 0, '诊断系统应正常运行')
+            const diags = vscode.languages.getDiagnostics(document.uri)
+            assert.ok(Array.isArray(diags), '诊断系统应返回数组')
             
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor')
         })
@@ -270,7 +271,7 @@ suite('回归测试 - 现有功能完整性', () => {
             
             const config = vscode.workspace.getConfiguration('Hive-Formatter')
             
-            const validDialects = ['hive', 'mysql', 'spark', 'sql']
+            const validDialects = ['auto-detect', 'hive', 'mysql', 'spark', 'sql', 'postgresql', 'oracle', 'bigquery', 'snowflake', 'presto', 'sqlite']
             const dialect = config.get<string>('dialect')
             assert.ok(validDialects.includes(dialect || ''), `方言值 ${dialect} 应在有效范围内`)
             

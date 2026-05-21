@@ -340,11 +340,11 @@ export class EnhancedSqlChecker {
             let hasEnd = false
             let i = 0
             while (i < afterCase.length && depth > 0) {
-                const rest = afterCase.substring(i)
-                if (/^\bcase\b/i.test(rest)) {
+                const ch = afterCase[i].toLowerCase()
+                if (ch === 'c' && afterCase.substring(i, i + 4).toLowerCase() === 'case' && (i === 0 || !/\w/.test(afterCase[i - 1])) && (i + 4 >= afterCase.length || !/\w/.test(afterCase[i + 4]))) {
                     depth++
                     i += 4
-                } else if (/^\bend\b/i.test(rest)) {
+                } else if (ch === 'e' && afterCase.substring(i, i + 3).toLowerCase() === 'end' && (i === 0 || !/\w/.test(afterCase[i - 1])) && (i + 3 >= afterCase.length || !/\w/.test(afterCase[i + 3]))) {
                     depth--
                     if (depth === 0) hasEnd = true
                     i += 3
@@ -444,12 +444,12 @@ export class EnhancedSqlChecker {
         const mysqlFunctions = [
             { func: 'date_add', hint: '在 Hive 中使用 date_add 也可以，但建议确认版本' },
             { func: 'date_sub', hint: '在 Hive 中使用 date_sub 也可以，但建议确认版本' },
-            { func: 'now()', hint: '在 Hive 中可以使用 current_timestamp()' },
-            { func: 'sysdate()', hint: '在 Hive 中可以使用 current_timestamp()' }
+            { func: 'now', hint: '在 Hive 中可以使用 current_timestamp()' },
+            { func: 'sysdate', hint: '在 Hive 中可以使用 current_timestamp()' }
         ]
         
         for (const funcInfo of mysqlFunctions) {
-            const pattern = new RegExp(`\\b${funcInfo.func}\\b`, 'gi')
+            const pattern = new RegExp(`\\b${funcInfo.func}\\s*\\(`, 'gi')
             let match
             while ((match = pattern.exec(text)) !== null) {
                 const lineCol = lineColFromIndex(text, match.index)

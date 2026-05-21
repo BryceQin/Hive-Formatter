@@ -67,6 +67,8 @@ export class StatusBarProvider {
     }
 
     public dispose() {
+        if (StatusBarProvider.tempTimeout) clearTimeout(StatusBarProvider.tempTimeout)
+        if (StatusBarProvider.tempItem) StatusBarProvider.tempItem.dispose()
         this.statusBarItem.dispose()
         this.disposables.forEach(d => d.dispose())
     }

@@ -210,14 +210,20 @@ export class SqlLinter {
         let inString = false
         let stringChar = ''
         let inParen = 0
-        
-        for (const char of text) {
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i]
             if (char === '"' || char === "'") {
                 if (!inString) {
                     inString = true
                     stringChar = char
                 } else if (char === stringChar) {
-                    inString = false
+                    const nextCh = i + 1 < text.length ? text[i + 1] : ''
+                    if (nextCh === stringChar) {
+                        i++
+                    } else {
+                        inString = false
+                    }
                 }
             } else if (!inString) {
                 if (char === '(') inParen++
@@ -274,11 +280,11 @@ export class SqlLinter {
             const columnsPart = afterSelect.substring(0, fromIndex)
             const aliases = new Map<string, number[]>()
 
-            const aliasPattern = /\b(\w+)\b(?:\s+as\s+)?(\w+)?/gi
+            const aliasPattern = /\bas\s+(\w+)\b/gi
             let aliasMatch
 
             while ((aliasMatch = aliasPattern.exec(columnsPart)) !== null) {
-                const alias = (aliasMatch[2] || aliasMatch[1]).toLowerCase()
+                const alias = aliasMatch[1].toLowerCase()
                 if (!aliases.has(alias)) {
                     aliases.set(alias, [])
                 }

@@ -228,15 +228,19 @@ export class SqlCodeActionProvider implements vscode.CodeActionProvider {
         action.diagnostics = [diagnostic]
 
         const text = document.getText()
-        const havingMatch = text.match(/HAVING/i)
+        const lineStart = document.offsetAt(new vscode.Position(diagnostic.range.start.line, 0))
+        const lineEnd = document.offsetAt(new vscode.Position(diagnostic.range.end.line + 1, 0))
+        const lineText = text.substring(lineStart, lineEnd)
+        const havingMatch = /\bHAVING\b/i.exec(lineText)
 
         if (havingMatch && havingMatch.index !== undefined) {
-            const beforeHaving = text.substring(0, havingMatch.index)
+            const havingAbsIndex = lineStart + havingMatch.index
+            const beforeHaving = text.substring(0, havingAbsIndex)
             const fromMatch = beforeHaving.match(/FROM\s+(\w+)/i)
 
             if (fromMatch) {
                 const tableName = fromMatch[1]
-                const insertPos = document.positionAt(havingMatch.index)
+                const insertPos = document.positionAt(havingAbsIndex)
 
                 action.edit = new vscode.WorkspaceEdit()
                 action.edit.insert(

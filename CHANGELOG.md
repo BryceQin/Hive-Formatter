@@ -1,5 +1,18 @@
 # 更新日志
 
+## 0.19.2
+- 修复 checkIncompleteCase 中 substring+\b 词边界 Bug（encase/suitcase 等被误匹配为 CASE）
+- 修复 checkDateFunctionUsage 中 now()/sysdate() 正则将括号当作捕获组
+- 修复 createHavingFix 只找文档中第一个 HAVING 而非诊断对应位置
+- 修复 mysqlConverter yearPlaceholders 占位符子串冲突（__YEAR_1__ 匹配 __YEAR_10__）
+- 修复 mysqlConverter convert() 异常时 yearPlaceholders/yearIndex 状态未重置
+- 修复 checkDuplicateColumnAliases 别名正则过于宽泛（改为只匹配 AS 后的别名）
+- 修复 countCommaSeparated 不处理 SQL 转义引号 ''
+- 修复 SqlParameterReplaceCommand 替换位置偏移（不同长度替换导致后续位置错误）
+- 修复 StatusBarProvider dispose 未清理静态 tempTimeout/tempItem
+- 修复 paramTypes 配置缺少 default 值导致 config.get() 返回 undefined
+- 修复 configEditor.test.ts 恒真断言和 validDialects 列表不完整
+
 ## 0.19.1
 - 修复 FROM 关键字匹配在子串中 `\b` 词边界失效（`transform`/`fromb` 等被误匹配为 FROM）
 - 修复聚合函数在 WHERE 中检查不区分子查询内位置（子查询内合法聚合被误报）
