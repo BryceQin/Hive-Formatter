@@ -50,8 +50,13 @@ export class SqlParser {
         if (!inString) {
           inString = true
           stringChar = char
-        } else if (char === stringChar && sql[i - 1] !== '\\') {
-          inString = false
+        } else if (char === stringChar) {
+          const nextCh = i + 1 < sql.length ? sql[i + 1] : ''
+          if (nextCh === stringChar) {
+            i++
+          } else {
+            inString = false
+          }
         }
       }
 

@@ -155,7 +155,7 @@ export class SqlDiagnosticsProvider {
             for (let i = 0; i < afterSelect.length; i++) {
                 if (afterSelect[i] === '(') depth++
                 else if (afterSelect[i] === ')') depth--
-                else if (depth === 0 && afterSelect.substring(i, i + 4).match(/\bfrom\b/i)) {
+                else if (depth === 0 && afterSelect.substring(i, i + 4).toLowerCase() === 'from' && (i === 0 || !/\w/.test(afterSelect[i - 1])) && (i + 4 >= afterSelect.length || !/\w/.test(afterSelect[i + 4]))) {
                     fromStartRelative = i
                     break
                 }
@@ -305,8 +305,6 @@ export class SqlDiagnosticsProvider {
                         inString = false
                         stringStartPos = -1
                     }
-                } else if (char === '\\' && nextChar) {
-                    i++
                 }
             } else {
                 if (char === "'" || char === '"') {

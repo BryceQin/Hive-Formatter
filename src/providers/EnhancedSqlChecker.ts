@@ -137,7 +137,7 @@ export class EnhancedSqlChecker {
         let match
         while ((match = pattern.exec(text)) !== null) {
             const beforeJoin = text.substring(0, match.index)
-            const joinTypeMatch = beforeJoin.match(/\b(cross|natural)\s*$/i)
+            const joinTypeMatch = beforeJoin.match(/\b(cross|natural\s+(?:left|right|inner|full|outer)?\s*)$/i)
             if (joinTypeMatch) continue
 
             const afterJoin = text.substring(match.index + 4)
@@ -249,25 +249,34 @@ export class EnhancedSqlChecker {
             const clauseEnd = afterWhere.search(/\b(group\s+by|having|order\s+by|limit|union|;|$)/i)
             const whereClause = clauseEnd !== -1 ? afterWhere.substring(0, clauseEnd) : afterWhere
 
+            const subqueryRanges: [number, number][] = []
             let parenDepth = 0
-            let inSubquery = false
+            let subqueryStart = -1
             for (let i = 0; i < whereClause.length; i++) {
                 if (whereClause[i] === '(') {
                     parenDepth++
-                    if (parenDepth === 1 && /\bselect\b/i.test(whereClause.substring(i + 1, i + 7))) {
-                        inSubquery = true
+                    if (parenDepth === 1) {
+                        const rest = whereClause.substring(i + 1).trimStart()
+                        if (/^select\b/i.test(rest)) {
+                            subqueryStart = i
+                        }
                     }
                 } else if (whereClause[i] === ')') {
+                    if (parenDepth === 1 && subqueryStart !== -1) {
+                        subqueryRanges.push([subqueryStart, i])
+                        subqueryStart = -1
+                    }
                     parenDepth--
-                    if (parenDepth === 0) inSubquery = false
                 }
             }
 
-            if (!inSubquery) {
-                for (const agg of aggregates) {
-                    const aggPattern = new RegExp(`\\b${agg}\\s*\\(`, 'gi')
-                    let aggMatch
-                    while ((aggMatch = aggPattern.exec(whereClause)) !== null) {
+            for (const agg of aggregates) {
+                const aggPattern = new RegExp(`\\b${agg}\\s*\\(`, 'gi')
+                let aggMatch
+                while ((aggMatch = aggPattern.exec(whereClause)) !== null) {
+                    const aggPos = aggMatch.index
+                    const inSub = subqueryRanges.some(([start, end]) => aggPos >= start && aggPos <= end)
+                    if (!inSub) {
                         const absIndex = whereMatch.index + 5 + aggMatch.index
                         const lineCol = lineColFromIndex(text, absIndex)
                         const lineNum = lineCol.line

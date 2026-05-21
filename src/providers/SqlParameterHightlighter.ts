@@ -57,7 +57,7 @@ export class SqlParameterHighlighter {
         
         for (const selection of selections) {
             const pos = selection.active
-            const wordRange = document.getWordRangeAtPosition(pos, /[$:?@][a-zA-Z0-9_]+|:[a-zA-Z0-9_]+/)
+            const wordRange = document.getWordRangeAtPosition(pos, /[$@][a-zA-Z0-9_]+|:\??[a-zA-Z0-9_]+/)
             if (wordRange) {
                 const word = document.getText(wordRange)
                 if (this.isParameter(word)) {
@@ -96,7 +96,7 @@ export class SqlParameterHighlighter {
                                      word.startsWith('@') ||
                                      word.startsWith(':?') ||
                                      word.startsWith(':')
-        return startsWithValidPrefix && /^[$:?@][a-zA-Z0-9_]+$/.test(word)
+        return startsWithValidPrefix && /^([$@][a-zA-Z0-9_]+|:\??[a-zA-Z0-9_]+)$/.test(word)
     }
     
     private createParameterRegex(param: string): RegExp {
@@ -131,14 +131,14 @@ export class SqlParameterReplaceCommand {
             let currentParameter: string | null = null
             for (const selection of editor.selections) {
                 const pos = selection.active
-                const wordRange = document.getWordRangeAtPosition(pos, /[$:?@][a-zA-Z0-9_]+|:[a-zA-Z0-9_]+/)
+                const wordRange = document.getWordRangeAtPosition(pos, /[$@][a-zA-Z0-9_]+|:\??[a-zA-Z0-9_]+/)
                 if (wordRange) {
                     const word = document.getText(wordRange)
                 const startsWithValidPrefix = word.startsWith('$') ||
                                              word.startsWith('@') ||
                                              word.startsWith(':?') ||
                                              word.startsWith(':')
-                if (startsWithValidPrefix && /^[$:?@][a-zA-Z0-9_]+$/.test(word)) {
+                if (startsWithValidPrefix && /^([$@][a-zA-Z0-9_]+|:\??[a-zA-Z0-9_]+)$/.test(word)) {
                         currentParameter = word
                         break
                     }

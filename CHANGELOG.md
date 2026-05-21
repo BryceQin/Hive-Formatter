@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.19.1
+- 修复 FROM 关键字匹配在子串中 `\b` 词边界失效（`transform`/`fromb` 等被误匹配为 FROM）
+- 修复聚合函数在 WHERE 中检查不区分子查询内位置（子查询内合法聚合被误报）
+- 修复 NATURAL LEFT/INNER/FULL JOIN 被误报为缺少 ON 子句
+- 修复字符串闭合检查中反斜杠转义对 Hive SQL 不正确（`'C:\Users\'` 被误报为未闭合）
+- 修复 sqlParser 字符串转义使用反斜杠而非 SQL 标准 `''`（与 splitColumnDefinitions 不一致）
+- 修复 JDBC `:?param` 参数正则不支持双字符前缀（getWordRangeAtPosition 和验证正则）
+
 ## 0.19.0
 - 修复 HAVING 缺少 GROUP BY 检查逻辑颠倒（正则前瞻方向错误，导致所有 HAVING 都被误报）
 - 修复 LIMIT 缺少 ORDER BY 检查逻辑颠倒（正则前瞻方向错误，导致合法语句被误报）
